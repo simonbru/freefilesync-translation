@@ -32,10 +32,10 @@
 <target>Création du lien symbolique %x</target>
 
 <source>Moving file %x to the recycle bin</source>
-<target>Déplacement du fichier %x vers la Corbeille<</target>
+<target>Déplacement du fichier %x vers la Corbeille</target>
 
 <source>Moving folder %x to the recycle bin</source>
-<target>Déplacement du dossier %x vers la Corbeille<</target>
+<target>Déplacement du dossier %x vers la Corbeille</target>
 
 <source>Moving symbolic link %x to the recycle bin</source>
 <target>Déplacement du lien symbolique %x vers la Corbeille</target>
@@ -53,7 +53,7 @@
 <target>Contrôle de la disponibilité de la Corbeille pour le dossier %x ...</target>
 
 <source>The recycle bin is not available for the following folders. Files will be deleted permanently instead:</source>
-<target>La Corbeille n'est pas disponible por les dossiers suivants. Les fichiers seront détruits définitivement :</target>
+<target>La Corbeille n'est pas disponible pour les dossiers suivants. Les fichiers seront détruits définitivement :</target>
 
 <source>An exception occurred</source>
 <target>Une erreur s'est produite</target>
@@ -77,7 +77,7 @@
 <target>Le nombre de répertoires à gauche et à droite n'est pas identique.</target>
 
 <source>The config file must not contain settings at directory pair level when directories are set via command line.</source>
-<target>Le fichier de configuration ne peut pas contenir de paramètres au niveau de paires de répertoires quand ceux-ci sont définis par une ligne de commande.</target>
+<target>Le fichier de configuration ne peut pas contenir de paramètres au niveau des paires de répertoires quand ceux-ci sont définis par la ligne de commande.</target>
 
 <source>Directories cannot be set for more than one configuration file.</source>
 <target>Les répertoires ne peuvent pas être définis pour plus d'un fichier de configuration.</target>
@@ -92,22 +92,22 @@
 <target>fichier de configuration globale :</target>
 
 <source>config files:</source>
-<target>fichier de configuration :</target>
+<target>fichiers de configuration :</target>
 
 <source>directory</source>
 <target>répertoire</target>
 
 <source>Path to an alternate GlobalSettings.xml file.</source>
-<target>Chemin d'un fichier GlobalSettings.xml distinct.</target>
+<target>Chemin d'un fichier GlobalSettings.xml alternatif.</target>
 
 <source>Any number of FreeFileSync .ffs_gui and/or .ffs_batch configuration files.</source>
 <target>N'importe quel nombre de fichiers FreeFileSync .ffs_gui et/ou .ffs_batch.</target>
 
 <source>Any number of alternative directory pairs for at most one config file.</source>
-<target>N'importe quel nombre de paires de répertoires distincts pour au plus un fichier de configuration.</target>
+<target>N'importe quel nombre de paires de répertoires alternatifs pour au plus un fichier de configuration.</target>
 
 <source>Open configuration for editing without executing it.</source>
-<target>Ouvre la configuration pour une mise à jour sans exécution.</target>
+<target>Ouvre la configuration pour l'éditer sans l'exécuter.</target>
 
 <source>Cannot find the following folders:</source>
 <target>Impossible de trouver les dossiers suivants :</target>
@@ -152,7 +152,7 @@
 <target>Génération de la liste des fichiers...</target>
 
 <source>Fail-safe file copy</source>
-<target>Copie de fichiers sécurisé</target>
+<target>Copie de fichiers sécurisée</target>
 
 <source>Enabled</source>
 <target>Activé</target>
@@ -176,7 +176,7 @@
 <target>Exécution avec la priorité de tâche de fond.</target>
 
 <source>Lock directories during sync</source>
-<target>Vérouillage des répertoires pendant la synchronisation</target>
+<target>Verrouillage des répertoires pendant la synchronisation</target>
 
 <source>Verify copied files</source>
 <target>Vérification de la copie des fichiers</target>
@@ -206,7 +206,7 @@
 <target>L'élément de droite est plus récent</target>
 
 <source>Items have different content</source>
-<target>Les élement ont un contenu différent</target>
+<target>Les éléments ont un contenu différent</target>
 
 <source>Both sides are equal</source>
 <target>Les deux cotés sont identiques</target>
@@ -391,10 +391,10 @@ Trouvé : %y octets
 <target>Enregistrement du fichier %x...</target>
 
 <source>Items processed:</source>
-<target>Élements traités :</target>
+<target>Éléments traités :</target>
 
 <source>Items remaining:</source>
-<target>Élements restants :</target>
+<target>Éléments restants :</target>
 
 <source>Total time:</source>
 <target>Durée totale :</target>
@@ -1070,7 +1070,7 @@ La commande est déclenchée si :
 <target>&Ne plus afficher cette boîte de dialogue</target>
 
 <source>Items found:</source>
-<target>Élements trouvés :</target>
+<target>Éléments trouvés :</target>
 
 <source>Time remaining:</source>
 <target>Temps restant :</target>
@@ -1082,7 +1082,7 @@ La commande est déclenchée si :
 <target>Octets :</target>
 
 <source>Items:</source>
-<target>Eléments :</target>
+<target>Éléments :</target>
 
 <source>Synchronizing...</source>
 <target>Synchronisation en cours...</target>
