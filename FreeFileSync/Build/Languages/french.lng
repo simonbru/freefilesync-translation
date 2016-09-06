@@ -188,7 +188,7 @@
 <target>Comparaison en cours</target>
 
 <source>Calculating sync directions...</source>
-<target>Evaluation du sens des synchronisations ...</target>
+<target>Évaluation du sens des synchronisations ...</target>
 
 <source>Out of memory.</source>
 <target>Mémoire insuffisante.</target>
@@ -475,7 +475,7 @@ Trouvé : %y octets
 <target>&Afficher l'aide</target>
 
 <source>&About</source>
-<target>A &Propos de</target>
+<target>À &Propos de</target>
 
 <source>&Help</source>
 <target>&Aide</target>
@@ -531,7 +531,7 @@ La commande est déclenchée si :
 <target>Démarrer</target>
 
 <source>About</source>
-<target>A propos de</target>
+<target>À propos de</target>
 
 <source>Build: %x</source>
 <target>Généré : %x</target>
@@ -1503,8 +1503,8 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <pluralform>Do you really want to move the following %x items to the recycle bin?</pluralform>
 </source>
 <target>
-<pluralform>Etes-vous sûr de vouloir mettre à la Corbeille cet élément suivant ?</pluralform>
-<pluralform>Etes-vous sûr de vouloir mettre à la Corbeille les %x éléments suivants ?</pluralform>
+<pluralform>Êtes-vous sûr de vouloir mettre à la Corbeille cet élément suivant ?</pluralform>
+<pluralform>Êtes-vous sûr de vouloir mettre à la Corbeille les %x éléments suivants ?</pluralform>
 </target>
 
 <source>Move</source>
