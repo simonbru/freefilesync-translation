@@ -251,7 +251,7 @@
 <target>Impossible d'écrire les permissions de %x.</target>
 
 <source>Operation not supported for different base folder types.</source>
-<target>Opération non prise en charge pour dee dossiers de base de types différents.</target>
+<target>Opération non prise en charge pour des dossiers de base de types différents.</target>
 
 <source>Cannot write file %x.</source>
 <target>Impossible d'écrire le fichier %x.</target>
@@ -316,7 +316,7 @@ Trouvé : %y octets
 <target>Impossible de résoudre le lien symbolique %x.</target>
 
 <source>Cannot determine free disk space for %x.</source>
-<target>Impossible  de calculer l'espace disque libre de %x.</target>
+<target>Impossible de calculer l'espace disque libre de %x.</target>
 
 <source>Unable to move %x to the recycle bin.</source>
 <target>Impossible de déplacer %x dans la Corbeille.</target>
@@ -364,7 +364,7 @@ Trouvé : %y octets
 <target>Recherche du dossier %x...</target>
 
 <source>Timeout while searching for folder %x.</source>
-<target>Timeout lors de la recherche du dossier %x.</target>
+<target>Délai d'attente dépassé lors de la recherche du dossier %x.</target>
 
 <source>Cannot get process information.</source>
 <target>Impossible d'obtenir les informations du traitement.</target>
@@ -385,7 +385,7 @@ Trouvé : %y octets
 </target>
 
 <source>Detecting abandoned lock...</source>
-<target>Détection de verrouillage abandonné ...</target>
+<target>Détection de verrou abandonné ...</target>
 
 <source>Saving file %x...</source>
 <target>Enregistrement du fichier %x...</target>
@@ -469,7 +469,7 @@ Trouvé : %y octets
 <target>&Quitter</target>
 
 <source>&File</source>
-<target>&Fichiers</target>
+<target>&Fichier</target>
 
 <source>&View help</source>
 <target>&Afficher l'aide</target>
@@ -484,13 +484,13 @@ Trouvé : %y octets
 <target>Utilisation :</target>
 
 <source>1. Select folders to watch.</source>
-<target>1. Choisir les dossiers à examiner.</target>
+<target>1. Choisir les dossiers à surveiller.</target>
 
 <source>2. Enter a command line.</source>
-<target>2. Entrez une ligne de commande.</target>
+<target>2. Entrer une ligne de commande.</target>
 
 <source>3. Press 'Start'.</source>
-<target>3. Cliquez sur 'Démarrer'.</target>
+<target>3. Cliquer sur 'Démarrer'.</target>
 
 <source>To get started just import a .ffs_batch file.</source>
 <target>Pour démarrer, il faut importer un fichier .ffs_batch.</target>
@@ -546,7 +546,7 @@ La commande est déclenchée si :
 <target>Le chemin suivant n'accepte pas la gestion des répertoires :</target>
 
 <source>Directory monitoring active</source>
-<target>Gestion des répertoires active</target>
+<target>Surveillance des répertoires active</target>
 
 <source>Waiting until all directories are available...</source>
 <target>En attente de la disponibilité de tous les répertoires ...</target>
@@ -684,7 +684,7 @@ La commande est déclenchée si :
 <target>Synchronisation terminée sans erreurs</target>
 
 <source>Cleaning up old log files...</source>
-<target>Nettoyage des anciens fichiers log ...</target>
+<target>Nettoyage des anciens fichiers journaux ...</target>
 
 <source>You can switch to FreeFileSync's main window to resolve this issue.</source>
 <target>Vous pouvez basculer vers la fenêtre principale de FreeFileSync pour résoudre ce problème.</target>
@@ -750,10 +750,10 @@ La commande est déclenchée si :
 <target>Action</target>
 
 <source>Local comparison settings</source>
-<target>Paramètres de comparaison locaux</target>
+<target>Paramètres locaux de comparaison</target>
 
 <source>Local synchronization settings</source>
-<target>Paramètres de synchronisation locaux</target>
+<target>Paramètres locaux de synchronisation</target>
 
 <source>Local filter</source>
 <target>Filtre local</target>
@@ -765,7 +765,7 @@ La commande est déclenchée si :
 <target>Aucun</target>
 
 <source>Remove local settings</source>
-<target>supprimer les paramètres locaux</target>
+<target>Supprimer les paramètres locaux</target>
 
 <source>Clear local filter</source>
 <target>Effacer le filtre local</target>
@@ -840,10 +840,10 @@ La commande est déclenchée si :
 <target>&Vérifier les nouvelles versions</target>
 
 <source>&Check now</source>
-<target>&Contrôler maintenant</target>
+<target>&Vérifier maintenant</target>
 
 <source>Check &automatically once a week</source>
-<target>Contrôler &automatiquement une fois par semaine</target>
+<target>Vérifier &automatiquement une fois par semaine</target>
 
 <source>Cancel</source>
 <target>Annuler</target>
@@ -1025,13 +1025,13 @@ La commande est déclenchée si :
 <target>Masquer tous les messages d'erreurs et les avertissements</target>
 
 <source>On completion:</source>
-<target>A la fin :</target>
+<target>À la fin :</target>
 
 <source>OK</source>
 <target>OK</target>
 
 <source>Arrange folder pair</source>
-<target>Coordonne la paire de dossiers</target>
+<target>Réordonner la paire de dossiers</target>
 
 <source>Enter your SFTP login details:</source>
 <target>Entrer vos identifiants SFTP :</target>
@@ -1043,13 +1043,13 @@ La commande est déclenchée si :
 <target>Port :</target>
 
 <source>User name:</source>
-<target>Nom de l'utilisateur :</target>
+<target>Nom d'utilisateur :</target>
 
 <source>Password:</source>
 <target>Mot de passe :</target>
 
 <source>&Show password</source>
-<target>&Affiche le mot de passe</target>
+<target>&Afficher le mot de passe</target>
 
 <source>Directory on server:</source>
 <target>Répertoire sur le serveur :</target>
@@ -1103,7 +1103,7 @@ La commande est déclenchée si :
 <target>Arrêt</target>
 
 <source>Create a batch file for unattended synchronization. To start, double-click this file or schedule in a task planner: %x</source>
-<target>Créer un fichier batch pour une synchronisation non assitée. Pour démarrer, double-cliquez sur ce fichier ou planifiez-le dans le gestionnaire des tâches : %x</target>
+<target>Créer un fichier batch pour une synchronisation non assistée. Pour démarrer, double-cliquez sur ce fichier ou planifiez-le dans le gestionnaire des tâches : %x</target>
 
 <source>&Stop</source>
 <target>&Stop</target>
@@ -1121,7 +1121,7 @@ La commande est déclenchée si :
 <target>Limite :</target>
 
 <source>Limit maximum number of log files</source>
-<target>Nombre maximal de fichiers log</target>
+<target>Nombre maximal de fichiers journaux</target>
 
 <source>How can I schedule a batch job?</source>
 <target>Comment plannifier un job batch ?</target>
@@ -1175,7 +1175,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <target>Réafficher les boîtes de dialogue masquées</target>
 
 <source>Show all permanently hidden dialogs and warning messages again</source>
-<target>Réafficher en permanence les boîtes de dialogue et les avertissements</target>
+<target>Réafficher les boîtes de dialogue et les avertissements masqués précédemment</target>
 
 <source>&Default</source>
 <target>&Défaut</target>
@@ -1481,7 +1481,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <target>Progression</target>
 
 <source>Log</source>
-<target>Log</target>
+<target>Journal</target>
 
 <source>Loading...</source>
 <target>Chargement ...</target>
@@ -1491,7 +1491,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <pluralform>Copy the following %x items to another folder?</pluralform>
 </source>
 <target>
-<pluralform>Copier %x élément dans un autre dossier ?</pluralform>
+<pluralform>Copier cet élément dans un autre dossier ?</pluralform>
 <pluralform>Copier les %x éléments suivants dans un autre dossier ?</pluralform>
 </target>
 
@@ -1503,7 +1503,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <pluralform>Do you really want to move the following %x items to the recycle bin?</pluralform>
 </source>
 <target>
-<pluralform>Etes-vous sûr de vouloir mettre à la Corbeille %x élément suivant ?</pluralform>
+<pluralform>Etes-vous sûr de vouloir mettre à la Corbeille cet élément suivant ?</pluralform>
 <pluralform>Etes-vous sûr de vouloir mettre à la Corbeille les %x éléments suivants ?</pluralform>
 </target>
 
@@ -1515,12 +1515,12 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <pluralform>Do you really want to delete the following %x items?</pluralform>
 </source>
 <target>
-<pluralform>Voulez-vous vraiment supprimer %x élément ?</pluralform>
+<pluralform>Voulez-vous vraiment supprimer cet élément ?</pluralform>
 <pluralform>Voulez-vous vraiment supprimer ces %x éléments ?</pluralform>
 </target>
 
 <source>Copy DACL, SACL, Owner, Group</source>
-<target>Copie DACL, SACL, propriétaire et groupe</target>
+<target>Copie DACL, SACL, Propriétaire et Groupe</target>
 
 <source>Integrate external applications into context menu. The following macros are available:</source>
 <target>Inclure les applications externes dans le menu contextuel. Les macros suivantes sont disponibles :</target>
@@ -1529,7 +1529,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <target>Chemin complet du fichier ou du dossier</target>
 
 <source>Parent folder path</source>
-<target>Chemin parent du dossier</target>
+<target>Chemin du dossier parent</target>
 
 <source>Temporary local copy for SFTP and MTP storage</source>
 <target>Copie temporaire en local pour les stockages en SFTP et MTP.</target>
@@ -1652,13 +1652,13 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <target>&Contrôle</target>
 
 <source>Consistency check failed for %x.</source>
-<target>Contrôle de cohérence incorrect pour %x.</target>
+<target>Échec du contrôle d'intégrité pour %x.</target>
 
 <source>Cannot find system function %x.</source>
 <target>Impossible de trouver la fonction système %x.</target>
 
 <source>Unable to register to receive system messages.</source>
-<target>Impossible d'enregistrer la réception des messages système.</target>
+<target>Impossible de s'enregistrer pour la réception des messages système.</target>
 
 <source>Installation files are corrupt. Please reinstall FreeFileSync.</source>
 <target>Les fichiers d'installation sont abîmés. Veuillez réinstaller FreeFileSync.</target>
@@ -1667,10 +1667,10 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <target>Impossible d'enregistrer les notifications de périphérique pour %x.</target>
 
 <source>Cannot monitor directory %x.</source>
-<target>Impossible de gérer le répertoire %x.</target>
+<target>Impossible de surveiller le répertoire %x.</target>
 
 <source>The file is locked by another process:</source>
-<target>Le fichier est verrouillé par un autre process :</target>
+<target>Le fichier est verrouillé par un autre processus :</target>
 
 <source>Cannot read security context of %x.</source>
 <target>Impossible de lire les paramètres de sécurité de %x.</target>
@@ -1685,7 +1685,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <target>Impossible de copier les permissions de %x à %y.</target>
 
 <source>%x is not a regular directory name.</source>
-<target>%x n'est pas un nom de répertoire valise.</target>
+<target>%x n'est pas un nom de répertoire valide.</target>
 
 <source>Cannot copy file %x to %y.</source>
 <target>Impossible de copier le fichier %x vers %y.</target>
@@ -1730,7 +1730,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 </target>
 
 <source>Cannot set privilege %x.</source>
-<target>Impossible de fixer le privilège %x.</target>
+<target>Impossible d'attribuer le privilège %x.</target>
 
 <source>Unable to suspend system sleep mode.</source>
 <target>Impossible de suspendre le mode veille du système.</target>
@@ -1739,10 +1739,10 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <target>Impossible de modifier les priorités E/S des tâches.</target>
 
 <source>Error Code %x:</source>
-<target>Code erreur %x :</target>
+<target>Code d'erreur %x :</target>
 
 <source>Checking recycle bin failed for folder %x.</source>
-<target>Echec de la vérification de la corbeille pour le dossier %x.</target>
+<target>Échec de la vérification de la Corbeille pour le dossier %x.</target>
 
 <source>The following XML elements could not be read:</source>
 <target>Les éléments XML suivants ne peuvent être lus :</target>
@@ -1751,7 +1751,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <target>Le fichier de configuration %x est incomplet. Les éléments manquants sont fixés à leur valeur par défaut.</target>
 
 <source>Internet access failed.</source>
-<target>Echec de l'accès Internet.</target>
+<target>Échec de l'accès à Internet.</target>
 
 <source>Prepare installation</source>
 <target>Préparation de l'installation</target>
@@ -1775,7 +1775,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <target>Enregistrer la configuration dans "%APPDATA%\FreeFileSync"</target>
 
 <source>Register FreeFileSync file extensions</source>
-<target>Enregistrez les extensions de fichier FreeFileSync</target>
+<target>Enregistrer les extensions de fichier FreeFileSync</target>
 
 <source>Create Explorer context menu entries</source>
 <target>Créer les entrées du menu contextuel de l'Explorateur</target>
@@ -1784,7 +1784,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <target>Sauvegarder la configuration dans le répertoire d'installation</target>
 
 <source>Do not write to Registry</source>
-<target>Ne pas modifier la base des registres</target>
+<target>Ne pas modifier la base de registre</target>
 
 <source>Just copy the files</source>
 <target>Copier seulement les fichiers</target>
