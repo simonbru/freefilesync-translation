@@ -1491,7 +1491,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <pluralform>Copy the following %x items to another folder?</pluralform>
 </source>
 <target>
-<pluralform>Copier cet élément dans un autre dossier ?</pluralform>
+<pluralform>Copier cet %x élément dans un autre dossier ?</pluralform>
 <pluralform>Copier les %x éléments suivants dans un autre dossier ?</pluralform>
 </target>
 
@@ -1503,7 +1503,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <pluralform>Do you really want to move the following %x items to the recycle bin?</pluralform>
 </source>
 <target>
-<pluralform>Êtes-vous sûr de vouloir mettre à la Corbeille cet élément suivant ?</pluralform>
+<pluralform>Êtes-vous sûr de vouloir mettre à la Corbeille cet %x élément suivant ?</pluralform>
 <pluralform>Êtes-vous sûr de vouloir mettre à la Corbeille les %x éléments suivants ?</pluralform>
 </target>
 
@@ -1515,7 +1515,7 @@ Cela garantit la cohérence du système de fichiers en cas d'erreur grave.
 <pluralform>Do you really want to delete the following %x items?</pluralform>
 </source>
 <target>
-<pluralform>Voulez-vous vraiment supprimer cet élément ?</pluralform>
+<pluralform>Voulez-vous vraiment supprimer cet %x élément ?</pluralform>
 <pluralform>Voulez-vous vraiment supprimer ces %x éléments ?</pluralform>
 </target>
 
