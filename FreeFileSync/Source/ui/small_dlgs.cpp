@@ -5,11 +5,11 @@
 // *****************************************************************************
 
 #include "small_dlgs.h"
-#include <wx/wupdlock.h>
+#include <chrono>
 #include <zen/format_unit.h>
 #include <zen/build_info.h>
-#include <zen/tick_count.h>
 #include <zen/stl_tools.h>
+#include <wx/wupdlock.h>
 #include <wx+/choice_enum.h>
 #include <wx+/bitmap_button.h>
 #include <wx+/rtl.h>
@@ -162,8 +162,11 @@ private:
     void OnOkay  (wxCommandEvent& event) override;
     void OnCancel(wxCommandEvent& event) override { EndModal(ReturnSmallDlg::BUTTON_CANCEL); }
     void OnClose (wxCloseEvent&   event) override { EndModal(ReturnSmallDlg::BUTTON_CANCEL); }
+
+    void OnDetectServerChannelLimit(wxCommandEvent& event) override;
     void OnToggleShowPassword(wxCommandEvent& event) override;
     void OnBrowseSftpFolder  (wxCommandEvent& event) override;
+    void OnHelpSftpPerformance(wxHyperlinkEvent& event) override { displayHelpEntry(L"synchronize-with-sftp", this); }
 
     std::pair<SftpLoginInfo, Zstring> getSftpLogin() const;
 
@@ -195,6 +198,8 @@ SftpSetupDlg::SftpSetupDlg(wxWindow* parent, Zstring& folderPathPhrase) : SftpSe
         m_textCtrlUserName      ->ChangeValue(utfCvrtTo<wxString>(login.username));
         m_textCtrlPasswordHidden->ChangeValue(utfCvrtTo<wxString>(login.password));
         m_textCtrlServerPath    ->ChangeValue(utfCvrtTo<wxString>(serverRelPath));
+        m_spinCtrlConnectionCount->SetValue(login.traverserConnectionCount);
+        m_spinCtrlChannelCount   ->SetValue(login.traverserChannelsPerConnection);
     }
 
     GetSizer()->SetSizeHints(this); //~=Fit() + SetMinSize()
@@ -202,6 +207,20 @@ SftpSetupDlg::SftpSetupDlg(wxWindow* parent, Zstring& folderPathPhrase) : SftpSe
     Center(); //needs to be re-applied after a dialog size change!
 
     m_buttonOkay->SetFocus();
+}
+
+
+void SftpSetupDlg::OnDetectServerChannelLimit(wxCommandEvent& event)
+{
+    try
+    {
+        const int channelCountMax = getServerMaxChannelsPerConnection(getSftpLogin().first); //throw FileError
+        m_spinCtrlChannelCount->SetValue(channelCountMax);
+    }
+    catch (const FileError& e)
+    {
+        showNotificationDialog(this, DialogInfoType::ERROR2, PopupDialogCfg().setDetailInstructions(e.toString()));
+    }
 }
 
 
@@ -230,6 +249,8 @@ std::pair<SftpLoginInfo, Zstring /*host-relative path*/> SftpSetupDlg::getSftpLo
     login.port     = stringTo<int>     (m_textCtrlPort    ->GetValue()); //0 if empty
     login.username = utfCvrtTo<Zstring>(m_textCtrlUserName->GetValue());
     login.password = utfCvrtTo<Zstring>((m_checkBoxShowPassword->GetValue() ? m_textCtrlPasswordVisible : m_textCtrlPasswordHidden)->GetValue());
+    login.traverserConnectionCount       = m_spinCtrlConnectionCount->GetValue();
+    login.traverserChannelsPerConnection = m_spinCtrlChannelCount   ->GetValue();
 
     Zstring serverRelPath = utfCvrtTo<Zstring>(m_textCtrlServerPath->GetValue());
 
@@ -420,7 +441,7 @@ private:
 
     const std::vector<const FileSystemObject*>& rowsToDeleteOnLeft;
     const std::vector<const FileSystemObject*>& rowsToDeleteOnRight;
-    const TickVal tickCountStartup;
+    const std::chrono::steady_clock::time_point dlgStartTime = std::chrono::steady_clock::now();
 
     //output-only parameters:
     bool& useRecycleBinOut;
@@ -434,7 +455,6 @@ DeleteDialog::DeleteDialog(wxWindow* parent,
     DeleteDlgGenerated(parent),
     rowsToDeleteOnLeft(rowsOnLeft),
     rowsToDeleteOnRight(rowsOnRight),
-    tickCountStartup(getTicks()),
     useRecycleBinOut(useRecycleBin)
 {
 #ifdef ZEN_WIN
@@ -504,11 +524,8 @@ void DeleteDialog::updateGui()
 void DeleteDialog::OnOK(wxCommandEvent& event)
 {
     //additional safety net, similar to Windows Explorer: time delta between DEL and ENTER must be at least 50ms to avoid accidental deletion!
-    const TickVal now = getTicks();   //0 on error
-    std::int64_t tps = ticksPerSec(); //
-    if (now.isValid() && tickCountStartup.isValid() && tps != 0)
-        if (dist(tickCountStartup, now) * 1000 / tps < 50)
-            return;
+    if (std::chrono::steady_clock::now() < dlgStartTime + std::chrono::milliseconds(50))
+        return;
 
     useRecycleBinOut = m_checkBoxUseRecycler->GetValue();
 

@@ -26,7 +26,7 @@
 
 #ifdef ZEN_WIN
     #include <zen/win_ver.h>
-    #include <zen/dll.h>
+    //#include <zen/dll.h>
     #include "lib/app_user_mode_id.h"
     #include <zen/service_notification.h>
 
@@ -51,26 +51,8 @@ int _matherr(_Inout_ struct _exception* except)
 
 namespace
 {
-#ifdef ZEN_WIN
-void enableCrashingOnCrashes() //should be needed for 32-bit code only: http://randomascii.wordpress.com/2012/07/05/when-even-crashing-doesnt-work
-{
-    using GetProcessUserModeExceptionPolicyFun = BOOL (WINAPI*)(LPDWORD lpFlags);
-    using SetProcessUserModeExceptionPolicyFun = BOOL (WINAPI*)(  DWORD dwFlags);
-    const DWORD EXCEPTION_SWALLOWING = 0x1;
-
-    const SysDllFun<GetProcessUserModeExceptionPolicyFun> getProcessUserModeExceptionPolicy(L"kernel32.dll", "GetProcessUserModeExceptionPolicy");
-    const SysDllFun<SetProcessUserModeExceptionPolicyFun> setProcessUserModeExceptionPolicy(L"kernel32.dll", "SetProcessUserModeExceptionPolicy");
-    if (getProcessUserModeExceptionPolicy && setProcessUserModeExceptionPolicy) //available since Windows 7 SP1
-    {
-        DWORD dwFlags = 0;
-        if (getProcessUserModeExceptionPolicy(&dwFlags) && (dwFlags & EXCEPTION_SWALLOWING))
-            setProcessUserModeExceptionPolicy(dwFlags & ~EXCEPTION_SWALLOWING);
-    }
-}
-
 #ifdef _MSC_VER
 void crtInvalidParameterHandler(const wchar_t* expression, const wchar_t* function, const wchar_t* file, unsigned int line, uintptr_t pReserved) { assert(false); }
-#endif
 #endif
 
 
@@ -133,7 +115,6 @@ const wxEventType EVENT_ENTER_EVENT_LOOP = wxNewEventType();
 bool Application::OnInit()
 {
 #ifdef ZEN_WIN
-    enableCrashingOnCrashes();
 #ifdef _MSC_VER
     _set_invalid_parameter_handler(crtInvalidParameterHandler); //see comment in <zen/time.h>
 #endif

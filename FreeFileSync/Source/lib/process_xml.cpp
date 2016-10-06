@@ -910,15 +910,23 @@ void readConfig(const XmlIn& in, FolderPairEnh& enhPair)
     in["Left" ](enhPair.folderPathPhraseLeft_);
     in["Right"](enhPair.folderPathPhraseRight_);
 
-	warn_static("remove after migration - 2016-07-24")
-            replace(enhPair.folderPathPhraseLeft_, Zstr("%csidl_MyDocuments%"), Zstr("%csidl_Documents%"));
-            replace(enhPair.folderPathPhraseLeft_, Zstr("%csidl_MyMusic%"    ), Zstr("%csidl_Music%"));
-            replace(enhPair.folderPathPhraseLeft_, Zstr("%csidl_MyPictures%" ), Zstr("%csidl_Pictures%"));
-            replace(enhPair.folderPathPhraseLeft_, Zstr("%csidl_MyVideos%"   ), Zstr("%csidl_Videos%"));
-            replace(enhPair.folderPathPhraseRight_, Zstr("%csidl_MyDocuments%"), Zstr("%csidl_Documents%"));
-            replace(enhPair.folderPathPhraseRight_, Zstr("%csidl_MyMusic%"    ), Zstr("%csidl_Music%"));
-            replace(enhPair.folderPathPhraseRight_, Zstr("%csidl_MyPictures%" ), Zstr("%csidl_Pictures%"));
-            replace(enhPair.folderPathPhraseRight_, Zstr("%csidl_MyVideos%"   ), Zstr("%csidl_Videos%"));
+    warn_static("remove after migration - 2016-07-24")
+    auto ciReplace = [](Zstring& pathPhrase, const Zstring& oldTerm, const Zstring& newTerm)
+    {
+        auto tmpPath = makeUpperCopy(pathPhrase);
+        auto tmpOld  = makeUpperCopy(oldTerm);
+        size_t pos = tmpPath.find(tmpOld);
+        if (pos != Zstring::npos)
+            pathPhrase = Zstring(pathPhrase.c_str(), pos) + newTerm + (pathPhrase.c_str() + pos + oldTerm.size());
+    };
+    ciReplace(enhPair.folderPathPhraseLeft_, Zstr("%csidl_MyDocuments%"), Zstr("%csidl_Documents%"));
+    ciReplace(enhPair.folderPathPhraseLeft_, Zstr("%csidl_MyMusic%"    ), Zstr("%csidl_Music%"));
+    ciReplace(enhPair.folderPathPhraseLeft_, Zstr("%csidl_MyPictures%" ), Zstr("%csidl_Pictures%"));
+    ciReplace(enhPair.folderPathPhraseLeft_, Zstr("%csidl_MyVideos%"   ), Zstr("%csidl_Videos%"));
+    ciReplace(enhPair.folderPathPhraseRight_, Zstr("%csidl_MyDocuments%"), Zstr("%csidl_Documents%"));
+    ciReplace(enhPair.folderPathPhraseRight_, Zstr("%csidl_MyMusic%"    ), Zstr("%csidl_Music%"));
+    ciReplace(enhPair.folderPathPhraseRight_, Zstr("%csidl_MyPictures%" ), Zstr("%csidl_Pictures%"));
+    ciReplace(enhPair.folderPathPhraseRight_, Zstr("%csidl_MyVideos%"   ), Zstr("%csidl_Videos%"));
 
     //###########################################################
     //alternate comp configuration (optional)
@@ -1175,10 +1183,10 @@ void readConfig(const XmlIn& in, XmlGlobalSettings& config, int formatVer)
                 replace(item.second, Zstr("%item_path2%"), Zstr("%local_path2%"));
             }
         }
-	warn_static("remove macro migration after some time! 2016-07-18")
+    warn_static("remove macro migration after some time! 2016-07-18")
 #ifdef ZEN_LINUX //small bug fix: "Browse directory" command used wrong macro in formatVer == 3
-        for (auto& item : config.gui.externelApplications)
-            replace(item.second, Zstr("%item_folder%"),  Zstr("%folder_path%"));
+    for (auto& item : config.gui.externelApplications)
+        replace(item.second, Zstr("%item_folder%"),  Zstr("%folder_path%"));
 #endif
 
     //last update check

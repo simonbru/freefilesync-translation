@@ -10,7 +10,7 @@
 #include <zen/file_access.h>
 #include <zen/dir_watcher.h>
 #include <zen/thread.h>
-#include <zen/tick_count.h>
+//#include <zen/tick_count.h>
 #include <wx/utils.h>
 #include "../lib/resolve_path.h"
 //#include "../library/db_file.h"     //SYNC_DB_FILE_ENDING -> complete file too much of a dependency; file ending too little to decouple into single header
@@ -93,14 +93,13 @@ WaitResult waitForChanges(const std::vector<Zstring>& folderPathPhrases, //throw
         }
     }
 
-    const std::int64_t TICKS_DIR_CHECK_INTERVAL = CHECK_FOLDER_INTERVAL * ticksPerSec(); //0 on error
-    TickVal lastCheck = getTicks(); //0 on error
+    auto lastCheck = std::chrono::steady_clock::now();
     for (;;)
     {
         const bool checkDirExistNow = [&]() -> bool //checking once per sec should suffice
         {
-            const TickVal now = getTicks(); //0 on error
-            if (dist(lastCheck, now) >= TICKS_DIR_CHECK_INTERVAL)
+            const auto now = std::chrono::steady_clock::now();
+			if (now >= lastCheck + std::chrono::seconds(CHECK_FOLDER_INTERVAL))
             {
                 lastCheck = now;
                 return true;

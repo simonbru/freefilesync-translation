@@ -53,23 +53,33 @@ wxBitmap extractWxBitmap(ImageHolder&& ih)
 
 
 #ifdef ZEN_WIN
-#pragma warning(suppress: 4592) //"symbol will be dynamically initialized (implementation limitation)"
-const std::set<Zstring, LessFilePath> linkExt { L"lnk", L"pif", L"url", L"website" };
+inline
+bool hasWindowsLinkExtension(const Zstring& filePath)
+{
+    const Zstring ext = getFileExtension(filePath);
+
+    return equalNoCase(ext, L"lnk") || //no need for non-POD global with these few comparisons!
+           equalNoCase(ext, L"pif") ||
+           equalNoCase(ext, L"url") ||
+           equalNoCase(ext, L"website");
+}
 
 
 //test for extension for non-thumbnail icons that can have a stock icon which does not have to be physically read from disc
 inline
 bool hasStandardIconExtension(const Zstring& filePath)
 {
-    static const std::set<Zstring, LessFilePath> customIconExt { L"ani", L"cur", L"exe", L"ico", L"msc", L"scr" }; //function-scope statics are not (yet) thread-safe in VC12
-#if defined _MSC_VER && _MSC_VER < 1900
-#error function scope static initialization is not yet thread-safe!
-#endif
+    const Zstring ext = getFileExtension(filePath);
 
-    const Zstring extension(getFileExtension(filePath));
+    if (equalNoCase(ext, L"ani") || //no need for non-POD global with these few comparisons!
+        equalNoCase(ext, L"cur") ||
+        equalNoCase(ext, L"exe") ||
+        equalNoCase(ext, L"ico") ||
+        equalNoCase(ext, L"msc") ||
+        equalNoCase(ext, L"scr"))
+        return false;
 
-    return customIconExt.find(extension) == customIconExt.end() &&
-           linkExt.find(extension) == linkExt.end();
+    return !hasWindowsLinkExtension(filePath);
 }
 #endif
 }
@@ -527,8 +537,7 @@ wxBitmap IconBuffer::linkOverlayIcon(IconSize sz)
 bool zen::hasLinkExtension(const Zstring& filepath)
 {
 #ifdef ZEN_WIN
-    const Zstring& extension = getFileExtension(filepath);
-    return linkExt.find(extension) != linkExt.end();
+    return hasWindowsLinkExtension(filepath);
 
 #elif defined ZEN_LINUX
     const Zstring& extension = getFileExtension(filepath);

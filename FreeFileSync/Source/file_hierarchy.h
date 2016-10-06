@@ -16,8 +16,10 @@
 #include <zen/zstring.h>
 #include <zen/fixed_list.h>
 #include <zen/stl_tools.h>
-#include "structures.h"
 #include <zen/file_id_def.h>
+#ifndef NDEBUG
+    #include <zen/thread.h>
+#endif
 #include "structures.h"
 #include "lib/hard_filter.h"
 #include "fs/abstract.h"
@@ -320,6 +322,7 @@ struct FSObjectVisitor
     virtual void visit(const FolderPair&  folder ) = 0;
 };
 
+
 //inherit from this class to allow safe random access by id instead of unsafe raw pointer
 //allow for similar semantics like std::weak_ptr without having to use std::shared_ptr
 template <class T>
@@ -347,7 +350,18 @@ private:
     ObjectMgr           (const ObjectMgr& rhs) = delete;
     ObjectMgr& operator=(const ObjectMgr& rhs) = delete; //it's not well-defined what copying an objects means regarding object-identity in this context
 
-    static std::unordered_set<const ObjectMgr*>& activeObjects() { static std::unordered_set<const ObjectMgr*> inst; return inst; } //external linkage (even in header file!)
+    static std::unordered_set<const ObjectMgr*>& activeObjects()
+    {
+#ifndef NDEBUG
+        assert(std::this_thread::get_id() == mainThreadId); //our global ObjectMgr is not thread-safe (and currently does not need to be!)
+#endif
+        static std::unordered_set<const ObjectMgr*> inst;
+        return inst; //external linkage (even in header file!)
+    }
+
+#ifndef NDEBUG
+    static const std::thread::id mainThreadId;
+#endif
 };
 
 //------------------------------------------------------------------

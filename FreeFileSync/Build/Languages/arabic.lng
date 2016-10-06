@@ -7,6 +7,21 @@
 	<plural_definition>n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5</plural_definition>
 </header>
 
+<source>%x: Invalid plural form definition</source>
+<target></target>
+
+<source>Active connections: %x</source>
+<target></target>
+
+<source>
+<pluralform>Cannot wait on more than 1 connection at a time.</pluralform>
+<pluralform>Cannot wait on more than %x connections at a time.</pluralform>
+</source>
+<target></target>
+
+<source>SFTP timeout reached.</source>
+<target></target>
+
 <source>Both sides have changed since last synchronization.</source>
 <target>كلا الجانبين قد تغير منذ المزامنة الأخيرة.</target>
 
@@ -113,7 +128,7 @@
 <target>تعذر العثور على المجلدات التالية:</target>
 
 <source>If this error is ignored the folders will be considered empty. Missing folders are created automatically when needed.</source>
-<target></target>
+<target>إذا تم تجاهل هذا الخطأ سيتم اعتبار المجلدات فارغة. يتم إنشاء المجلدات المفقودة تلقائيا عند الحاجة.</target>
 
 <source>A folder input field is empty.</source>
 <target>حقل إدخال خاص بمجلد فارغ.</target>
@@ -155,10 +170,10 @@
 <target>نسخ ملفات آمن من الفشل</target>
 
 <source>Enabled</source>
-<target></target>
+<target>ممكن</target>
 
 <source>Disabled</source>
-<target></target>
+<target>معطل</target>
 
 <source>Copy locked files</source>
 <target>نسخ الملفات المقفلة</target>
@@ -167,22 +182,22 @@
 <target>نسخ أذونات الوصول إلى الملف</target>
 
 <source>File time tolerance</source>
-<target></target>
+<target>التفاوت في وقت الملف</target>
 
 <source>Folder access timeout</source>
-<target></target>
+<target>مهلة وصول المجلد</target>
 
 <source>Run with background priority</source>
-<target></target>
+<target>تشغيل مع أولوية في الخلفية</target>
 
 <source>Lock directories during sync</source>
-<target></target>
+<target>قفل المسارات أثناء المزامنة</target>
 
 <source>Verify copied files</source>
-<target></target>
+<target>التحقق من الملفات التي تم نسخها</target>
 
 <source>Using non-default global settings:</source>
-<target></target>
+<target>استخدام إعدادات عامة غير افتراضية:</target>
 
 <source>Starting comparison</source>
 <target>بدأ عملية المقارنة</target>
@@ -273,6 +288,12 @@ Actual: %y bytes
 <source>Cannot move file %x to %y.</source>
 <target>لا يمكن نقل الملف  %x إلى %y.</target>
 
+<source>Unable to connect to %x.</source>
+<target>لا يمكن الاتصال بـ %x.</target>
+
+<source>Cannot open directory %x.</source>
+<target>لا يمكن فتح المسار %x.</target>
+
 <source>Cannot enumerate directory %x.</source>
 <target>لا يمكن تعداد المسار %x.</target>
 
@@ -309,9 +330,6 @@ Actual: %y bytes
 <source>Cannot resolve symbolic link %x.</source>
 <target>لا يمكن حل الارتباط الرمزي  %x.</target>
 
-<source>Cannot open directory %x.</source>
-<target>لا يمكن فتح المسار %x.</target>
-
 <source>Cannot determine free disk space for %x.</source>
 <target>لا يمكن تحديد مساحة القرص الحرة لـ %x.</target>
 
@@ -320,12 +338,6 @@ Actual: %y bytes
 
 <source>Incorrect command line:</source>
 <target>سطر أوامر خاطئ:</target>
-
-<source>Error Code %x:</source>
-<target>خطأ رقم %x:</target>
-
-<source>Unable to connect to %x.</source>
-<target></target>
 
 <source>
 <pluralform>1 byte</pluralform>
@@ -451,7 +463,7 @@ Actual: %y bytes
 <target>لا يمكن الوصول إلى خدمة "نسخ الظل لوحدة التخزين".</target>
 
 <source>Please run the 64-bit version of FreeFileSync to create shadow copies on this system.</source>
-<target></target>
+<target>الرجاء تشغيل نسخة 64-بت من FreeFileSync لإنشاء نسخ الظل على هذا النظام.</target>
 
 <source>Cannot determine volume name for %x.</source>
 <target>تعذر تحديد اسم الوسط %x.</target>
@@ -654,7 +666,7 @@ The command is triggered if:
 <target>العناصر التالية لم تحل اختلافاتها، و لن يتم مزامنتها:</target>
 
 <source>The following folders are significantly different. Please check that the correct folders are selected for synchronization.</source>
-<target></target>
+<target>المجلدات التالية تختلف اختلافا كبيرا. يرجى التحقق من تحديد المجلدات الصحيحة لإجراء التزامن.</target>
 
 <source>Not enough free disk space available in:</source>
 <target>المساحة الحرة المتوفرة على القرص غير كافية:</target>
@@ -748,10 +760,10 @@ The command is triggered if:
 <target>المسار الكامل</target>
 
 <source>Relative path</source>
-<target></target>
+<target>المسار النسبي</target>
 
 <source>Item name</source>
-<target></target>
+<target>اسم العنصر</target>
 
 <source>Size</source>
 <target>الحجم</target>
@@ -928,7 +940,7 @@ The command is triggered if:
 <target>زوج المجلدات:</target>
 
 <source>Main settings:</source>
-<target></target>
+<target>الإعدادات الرئيسية:</target>
 
 <source>Use local settings:</source>
 <target>استخدام الإعدادات المحلية:</target>
@@ -1098,10 +1110,10 @@ The command is triggered if:
 <target>الوقت المنقضي:</target>
 
 <source>Bytes:</source>
-<target></target>
+<target>بايت:</target>
 
 <source>Items:</source>
-<target></target>
+<target>العناصر:</target>
 
 <source>Synchronizing...</source>
 <target>مزامنة...</target>
@@ -1269,7 +1281,7 @@ This guarantees a consistent state even in case of a serious error.
 <target>يتوفر إصدار جديد من FreeFileSync:</target>
 
 <source>Local path not available for %x.</source>
-<target></target>
+<target>المسار المحلي غير متوفر لـ %x.</target>
 
 <source>Confirm</source>
 <target>تأكيد</target>
@@ -1573,16 +1585,16 @@ This guarantees a consistent state even in case of a serious error.
 <target>دمج تطبيقات خارجية في قائمة السياق. تتوفر وحدات الماكرو التالية:</target>
 
 <source>Full file or folder path</source>
-<target></target>
+<target>المسار الكامل للملف أو المجلد</target>
 
 <source>Parent folder path</source>
-<target></target>
+<target>مسار المجلد الحاوي</target>
 
 <source>Temporary local copy for SFTP and MTP storage</source>
-<target></target>
+<target>نسخة محلية مؤقتة لتخزين SFTP and MTP</target>
 
 <source>Parameters for opposite side</source>
-<target></target>
+<target>معلمات الجانب المعاكس</target>
 
 <source>Show hidden dialogs and warning messages again?</source>
 <target>إظهار التنبيهات و نوافذ الحوار المخفية مرة ثانية؟</target>
@@ -1690,16 +1702,16 @@ This guarantees a consistent state even in case of a serious error.
 <target>تنزيل الآن؟</target>
 
 <source>FreeFileSync is up to date.</source>
-<target></target>
+<target>FreeFileSync بأحدث إصدار بالفعل.</target>
 
 <source>Cannot find current FreeFileSync version number online. A newer version is likely available. Check manually now?</source>
-<target></target>
+<target>لا يمكن إيجاد رقم النسخة الحالية لـ FreeFileSync عبر الإنترنت. ربما تتوفر نسخة جديدة، هل تريد فعل ذلك يدويا؟</target>
 
 <source>&Check</source>
 <target>&تحقق</target>
 
 <source>Consistency check failed for %x.</source>
-<target></target>
+<target>فشل فحص التناسق لـ %x.</target>
 
 <source>Cannot find system function %x.</source>
 <target>لا يمكن العثور على وظيفة نظام %x.</target>
@@ -1708,7 +1720,7 @@ This guarantees a consistent state even in case of a serious error.
 <target>تعذر التسجيل لاستقبال رسائل النظام.</target>
 
 <source>Installation files are corrupt. Please reinstall FreeFileSync.</source>
-<target></target>
+<target>ملفات التثبيت تالفة. يرجى إعادة تثبيت FreeFileSync.</target>
 
 <source>Unable to register device notifications for %x.</source>
 <target>تعذر تسجيل تنبيهات الجهاز لـ %x.</target>
@@ -1797,6 +1809,9 @@ This guarantees a consistent state even in case of a serious error.
 <source>Cannot change process I/O priorities.</source>
 <target>تعذر تغيير أولويات I/O للعملية.</target>
 
+<source>Error Code %x:</source>
+<target>خطأ رقم %x:</target>
+
 <source>Checking recycle bin failed for folder %x.</source>
 <target>فشل تصفح سلة المهملات من أجل الملف %x.</target>
 
@@ -1831,7 +1846,7 @@ This guarantees a consistent state even in case of a serious error.
 <target>حفظ الإعدادات إلى ‏‪"%APPDATA%\FreeFileSync"</target>
 
 <source>Register FreeFileSync file extensions</source>
-<target></target>
+<target>تسجيل امتدادات الملفات لـ FreeFileSync</target>
 
 <source>Create Explorer context menu entries</source>
 <target>إنشاء مدخلات القوائم المحلية في متصفح الملفات</target>
@@ -1858,10 +1873,10 @@ This guarantees a consistent state even in case of a serious error.
 <target>قائمة إبدأ</target>
 
 <source>Registering FreeFileSync file extensions</source>
-<target></target>
+<target>جار تسجيل امتدادات الملفات لـ FreeFileSync</target>
 
 <source>Unregistering FreeFileSync file extensions</source>
-<target></target>
+<target>جار إلغاء تسجيل امتدادات الملفات لـ FreeFileSync</target>
 
 <source>FreeFileSync Configuration</source>
 <target>تضبيطات FreeFileSync</target>
@@ -1882,14 +1897,14 @@ This guarantees a consistent state even in case of a serious error.
 <target>شكرا على تبرعك ودعمك !</target>
 
 <source>This FreeFileSync installer for donors has reached its daily installation limit.</source>
-<target></target>
+<target>بلغ هذا المثبت لـ FreeFileSync للمتبرعين حد التركيب اليومي له.</target>
 
 <source>Download the regular version from the FreeFileSync homepage now?</source>
-<target></target>
+<target>تنزيل النسخة العادية من موقع FreeFileSync الآن ؟</target>
 
 <source>The portable version cannot install into the selected folder.</source>
-<target></target>
+<target>النسخة المحمولة لا يمكن تثبيتها في المجلد المحدد.</target>
 
 <source>Please choose the local installation type or select a different folder for installation.</source>
-<target></target>
+<target>الرجاء اختيار نوع التثبيت المحلي أو اختيار مجلد آخر للتثبيت.</target>
 

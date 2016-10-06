@@ -150,7 +150,7 @@ void drawXLabel(wxDC& dc, double xMin, double xMax, int blockCount, const Conver
     if (blockCount <= 0)
         return;
 
-    wxDCPenChanger dummy(dc, wxPen(wxColor(192, 192, 192))); //light grey => not accessible! but no big deal...
+    wxDCPenChanger dummy(dc, wxColor(192, 192, 192)); //light grey => not accessible! but no big deal...
     wxDCTextColourChanger dummy2(dc, wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT)); //use user setting for labels
 
     const double valRangePerBlock = (xMax - xMin) / blockCount;
@@ -178,7 +178,7 @@ void drawYLabel(wxDC& dc, double yMin, double yMax, int blockCount, const Conver
     if (blockCount <= 0)
         return;
 
-    wxDCPenChanger dummy(dc, wxPen(wxColor(192, 192, 192))); //light grey => not accessible! but no big deal...
+    wxDCPenChanger dummy(dc, wxColor(192, 192, 192)); //light grey => not accessible! but no big deal...
     wxDCTextColourChanger dummy2(dc, wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT)); //use user setting for labels
 
     const double valRangePerBlock = (yMax - yMin) / blockCount;

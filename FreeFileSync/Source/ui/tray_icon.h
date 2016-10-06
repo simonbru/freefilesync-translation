@@ -8,6 +8,7 @@
 #define TRAY_ICON_H_84217830427534285
 
 #include <functional>
+#include <memory>
 #include <wx/image.h>
 
 /*
@@ -37,9 +38,11 @@ private:
     class TaskBarImpl;
     TaskBarImpl* trayIcon;
 
-    wxString activeToolTip;
-    double activeFraction;
-    wxImage logo;
+    class ProgressIconGenerator;
+    std::unique_ptr<ProgressIconGenerator> iconGenerator;
+
+    wxString activeToolTip = L"FreeFileSync";
+    double activeFraction = 1;
 };
 
 #endif //TRAY_ICON_H_84217830427534285

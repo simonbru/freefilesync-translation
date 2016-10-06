@@ -5,12 +5,13 @@
 // *****************************************************************************
 
 #include "format_unit.h"
-#include "basic_math.h"
-#include "i18n.h"
-#include "time.h"
 #include <cwchar> //swprintf
 #include <ctime>
 #include <cstdio>
+#include "basic_math.h"
+#include "i18n.h"
+#include "time.h"
+#include "globals.h"
 
 #ifdef ZEN_WIN
     #include "int64.h"
@@ -163,48 +164,17 @@ std::wstring zen::fractionToString(double fraction)
 #ifdef ZEN_WIN
 namespace
 {
-bool getUserSetting(LCTYPE lt, UINT& setting)
-{
-    return ::GetLocaleInfo(LOCALE_USER_DEFAULT,                  //__in   LCID Locale,
-                           lt | LOCALE_RETURN_NUMBER,            //__in   LCTYPE LCType,
-                           reinterpret_cast<LPTSTR>(&setting),   //__out  LPTSTR lpLCData,
-                           sizeof(setting) / sizeof(TCHAR)) > 0; //__in   int cchData
-}
-
-
-bool getUserSetting(LCTYPE lt, std::wstring& setting)
-{
-    int bufferSize = ::GetLocaleInfo(LOCALE_USER_DEFAULT, lt, nullptr, 0);
-    if (bufferSize > 0)
-    {
-        std::vector<wchar_t> buffer(bufferSize);
-        if (::GetLocaleInfo(LOCALE_USER_DEFAULT, //__in   LCID Locale,
-                            lt,                  //__in   LCTYPE LCType,
-                            &buffer[0],          //__out  LPTSTR lpLCData,
-                            bufferSize) > 0)     //__in   int cchData
-        {
-            setting = &buffer[0]; //GetLocaleInfo() returns char count *including* 0-termination!
-            return true;
-        }
-    }
-    return false;
-}
-
 class IntegerFormat
 {
 public:
-    static const NUMBERFMT& get() { return getInst().fmt; }
-    static bool isValid() { return getInst().valid; }
-
-private:
-    static const IntegerFormat& getInst()
+    static std::shared_ptr<const IntegerFormat> instance()
     {
-#if defined _MSC_VER && _MSC_VER < 1900
-#error function scope static initialization is not yet thread-safe!
-#endif
-        static const IntegerFormat inst;
-        return inst;
+        static Global<const IntegerFormat> inst(std::make_unique<const IntegerFormat>());
+        return inst.get();
     }
+
+    bool isValid() const { return valid; }
+    const NUMBERFMT& get() const { return fmt; }
 
     IntegerFormat()
     {
@@ -219,7 +189,7 @@ private:
             getUserSetting(LOCALE_STHOUSAND,  thousandSep)     &&
             getUserSetting(LOCALE_INEGNUMBER, fmt.NegativeOrder))
         {
-            fmt.lpDecimalSep  = &decimalSep[0]; //not used
+            fmt.lpDecimalSep  = &decimalSep[0]; //don't need it
             fmt.lpThousandSep = &thousandSep[0];
 
             //convert LOCALE_SGROUPING to Grouping: https://blogs.msdn.microsoft.com/oldnewthing/20060418-11/?p=31493/
@@ -231,6 +201,36 @@ private:
             fmt.Grouping = stringTo<UINT>(grouping);
             valid = true;
         }
+    }
+
+private:
+    IntegerFormat           (const IntegerFormat&) = delete;
+    IntegerFormat& operator=(const IntegerFormat&) = delete;
+
+    static bool getUserSetting(LCTYPE lt, UINT& setting)
+    {
+        return ::GetLocaleInfo(LOCALE_USER_DEFAULT,                  //__in   LCID Locale,
+                               lt | LOCALE_RETURN_NUMBER,            //__in   LCTYPE LCType,
+                               reinterpret_cast<LPTSTR>(&setting),   //__out  LPTSTR lpLCData,
+                               sizeof(setting) / sizeof(TCHAR)) > 0; //__in   int cchData
+    }
+	
+    static bool getUserSetting(LCTYPE lt, std::wstring& setting)
+    {
+        const int bufferSize = ::GetLocaleInfo(LOCALE_USER_DEFAULT, lt, nullptr, 0);
+        if (bufferSize > 0)
+        {
+            std::vector<wchar_t> buffer(bufferSize);
+            if (::GetLocaleInfo(LOCALE_USER_DEFAULT, //__in   LCID Locale,
+                                lt,                  //__in   LCTYPE LCType,
+                                &buffer[0],          //__out  LPTSTR lpLCData,
+                                bufferSize) > 0)     //__in   int cchData
+            {
+                setting = &buffer[0]; //GetLocaleInfo() returns char count *including* 0-termination!
+                return true;
+            }
+        }
+        return false;
     }
 
     NUMBERFMT fmt = {};
@@ -245,21 +245,23 @@ private:
 std::wstring zen::ffs_Impl::includeNumberSeparator(const std::wstring& number)
 {
 #ifdef ZEN_WIN
-    if (IntegerFormat::isValid())
-    {
-        int bufferSize = ::GetNumberFormat(LOCALE_USER_DEFAULT, 0, number.c_str(), &IntegerFormat::get(), nullptr, 0);
-        if (bufferSize > 0)
+    if (std::shared_ptr<const IntegerFormat> fmt = IntegerFormat::instance())
+        if (fmt->isValid())
         {
-            std::vector<wchar_t> buffer(bufferSize);
-            if (::GetNumberFormat(LOCALE_USER_DEFAULT,   //__in       LCID Locale,
-                                  0,                     //__in       DWORD dwFlags,
-                                  number.c_str(),        //__in       LPCTSTR lpValue,
-                                  &IntegerFormat::get(), //__in_opt   const NUMBERFMT *lpFormat,
-                                  &buffer[0],            //__out_opt  LPTSTR lpNumberStr,
-                                  bufferSize) > 0)       //__in       int cchNumber
-                return &buffer[0]; //GetNumberFormat() returns char count *including* 0-termination!
+            const int bufferSize = ::GetNumberFormat(LOCALE_USER_DEFAULT, 0, number.c_str(), &fmt->get(), nullptr, 0);
+            if (bufferSize > 0)
+            {
+                std::vector<wchar_t> buffer(bufferSize);
+                if (::GetNumberFormat(LOCALE_USER_DEFAULT, //__in       LCID Locale,
+                                      0,                   //__in       DWORD dwFlags,
+                                      number.c_str(),      //__in       LPCTSTR lpValue,
+                                      &fmt->get(),         //__in_opt   const NUMBERFMT *lpFormat,
+                                      &buffer[0],          //__out_opt  LPTSTR lpNumberStr,
+                                      bufferSize) > 0)     //__in       int cchNumber
+                    return &buffer[0]; //GetNumberFormat() returns char count *including* 0-termination!
+            }
         }
-    }
+	assert(false); //what's the problem?
     return number;
 
 #elif defined ZEN_LINUX || defined ZEN_MAC
@@ -297,9 +299,6 @@ std::wstring zen::utcToLocalTimeString(std::int64_t utcTime)
 
     SYSTEMTIME systemTimeLocal = {};
 
-#if defined _MSC_VER && _MSC_VER < 1900
-#error function scope static initialization is not yet thread-safe!
-#endif
     static const bool useNewLocalTimeCalculation = zen::vistaOrLater();
 
     //https://msdn.microsoft.com/en-us/library/ms724277

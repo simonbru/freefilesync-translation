@@ -8,7 +8,7 @@
 #define APPLICATION_H_18506781708176342677
 
 #ifdef ZEN_WIN
-#include <zen/win.h> //include before <wx/msw/wrapwin.h>
+    #include <zen/win.h> //include before <wx/msw/wrapwin.h>
 #endif
 #include <wx/app.h>
 

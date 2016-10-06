@@ -695,7 +695,6 @@ void zen::renameFile(const Zstring& pathSource, const Zstring& pathTarget) //thr
 
 namespace
 {
-
 #ifdef ZEN_WIN
 void setFileTimeByHandle(HANDLE hFile,  //throw FileError
                          const FILETIME* creationTime, //optional
@@ -721,16 +720,6 @@ void setFileTimeByHandle(HANDLE hFile,  //throw FileError
         //function may fail if file is read-only: https://sourceforge.net/tracker/?func=detail&atid=1093080&aid=3514569&group_id=234430
         if (ec == ERROR_ACCESS_DENIED)
         {
-            auto setFileInfo = [&](FILE_BASIC_INFO basicInfo) //throw FileError; no const& since SetFileInformationByHandle() requires non-const parameter!
-            {
-                if (!::SetFileInformationByHandle(hFile,              //__in  HANDLE hFile,
-                                                  FileBasicInfo,      //__in  FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
-                                                  &basicInfo,         //__in  LPVOID lpFileInformation,
-                                                  sizeof(basicInfo))) //__in  DWORD dwBufferSize
-                    THROW_LAST_FILE_ERROR(replaceCpy(_("Cannot write file attributes of %x."), L"%x", fmtPath(filePath)), L"SetFileInformationByHandle");
-            };
-            //---------------------------------------------------------------------------
-
             BY_HANDLE_FILE_INFORMATION fileInfo = {};
             if (::GetFileInformationByHandle(hFile, &fileInfo))
                 if (fileInfo.dwFileAttributes & FILE_ATTRIBUTE_READONLY)
@@ -741,16 +730,20 @@ void setFileTimeByHandle(HANDLE hFile,  //throw FileError
                     if (creationTime)
                         basicInfo.CreationTime = toLargeInteger(*creationTime);
 
-                    //set file time + attributes
-                    setFileInfo(basicInfo); //throw FileError
+                    //set file time + attributes 
+                    if (!::SetFileInformationByHandle(hFile,              //__in  HANDLE hFile,
+                                                      FileBasicInfo,      //__in  FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
+                                                      &basicInfo,         //__in  LPVOID lpFileInformation,
+                                                      sizeof(basicInfo))) //__in  DWORD dwBufferSize
+                        THROW_LAST_FILE_ERROR(replaceCpy(_("Cannot write file attributes of %x."), L"%x", fmtPath(filePath)), L"SetFileInformationByHandle");
 
-                    try //... to restore original file attributes
-                    {
-                        FILE_BASIC_INFO basicInfo2 = {};
-                        basicInfo2.FileAttributes = fileInfo.dwFileAttributes;
-                        setFileInfo(basicInfo2); //throw FileError
-                    }
-                    catch (FileError&) {}
+                    //(try to) restore original file attributes
+                    FILE_BASIC_INFO basicInfo2 = {};
+                    basicInfo2.FileAttributes = fileInfo.dwFileAttributes;
+                    ::SetFileInformationByHandle(hFile,               //__in  HANDLE hFile,
+                                                 FileBasicInfo,       //__in  FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
+                                                 &basicInfo2,         //__in  LPVOID lpFileInformation,
+                                                 sizeof(basicInfo2)); //__in  DWORD dwBufferSize
                     return;
                 }
         }
@@ -836,26 +829,26 @@ void setWriteTimeNative(const Zstring& itemPath,
     }
     */
     //temporarily reset read-only flag if required
-    DWORD attribs = INVALID_FILE_ATTRIBUTES;
+    DWORD attribsToRestore = INVALID_FILE_ATTRIBUTES;
     ZEN_ON_SCOPE_EXIT(
-        if (attribs != INVALID_FILE_ATTRIBUTES)
-        ::SetFileAttributes(applyLongPathPrefix(itemPath).c_str(), attribs);
+        if (attribsToRestore != INVALID_FILE_ATTRIBUTES)
+        ::SetFileAttributes(applyLongPathPrefix(itemPath).c_str(), attribsToRestore);
     );
 
     auto removeReadonly = [&]() -> bool //throw FileError; may need to remove the readonly-attribute (e.g. on FAT usb drives)
     {
-        if (attribs == INVALID_FILE_ATTRIBUTES)
+        if (attribsToRestore == INVALID_FILE_ATTRIBUTES)
         {
-            const DWORD tmpAttr = ::GetFileAttributes(applyLongPathPrefix(itemPath).c_str());
-            if (tmpAttr == INVALID_FILE_ATTRIBUTES)
+            const DWORD attribs = ::GetFileAttributes(applyLongPathPrefix(itemPath).c_str());
+            if (attribs == INVALID_FILE_ATTRIBUTES)
                 THROW_LAST_FILE_ERROR(replaceCpy(_("Cannot read file attributes of %x."), L"%x", fmtPath(itemPath)), L"GetFileAttributes");
 
-            if (tmpAttr & FILE_ATTRIBUTE_READONLY)
+            if (attribs & FILE_ATTRIBUTE_READONLY)
             {
                 if (!::SetFileAttributes(applyLongPathPrefix(itemPath).c_str(), FILE_ATTRIBUTE_NORMAL))
                     THROW_LAST_FILE_ERROR(replaceCpy(_("Cannot write file attributes of %x."), L"%x", fmtPath(itemPath)), L"SetFileAttributes");
 
-                attribs = tmpAttr; //reapplied on scope exit
+                attribsToRestore = attribs; //reapplied on scope exit
                 return true;
             }
         }
@@ -866,7 +859,7 @@ void setWriteTimeNative(const Zstring& itemPath,
     {
         return ::CreateFile(applyLongPathPrefix(itemPath).c_str(), //_In_      LPCTSTR lpFileName,
                             (conservativeApproach ?
-                             //some NAS seem to have issues with FILE_WRITE_ATTRIBUTES, even worse, they may fail silently!
+                             //some NAS seem to have issues with FILE_WRITE_ATTRIBUTES: they silently fail later during SetFileTime()!
                              //http://sourceforge.net/tracker/?func=detail&atid=1093081&aid=3536680&group_id=234430
                              //Citrix shares seem to have this issue, too, but at least fail with "access denied" => try generic access first:
                              GENERIC_READ | GENERIC_WRITE :
@@ -881,7 +874,6 @@ void setWriteTimeNative(const Zstring& itemPath,
                             FILE_FLAG_BACKUP_SEMANTICS, /*needed to open a directory*/ //_In_      DWORD dwFlagsAndAttributes,
                             nullptr);                                               //_In_opt_  HANDLE hTemplateFile
     };
-
     {
         //extra scope for debug check below
 
@@ -889,7 +881,7 @@ void setWriteTimeNative(const Zstring& itemPath,
         for (int i = 0; i < 2; ++i) //we will get this handle, no matter what! :)
         {
             //1. be conservative
-            hFile = openFile(true);
+            hFile = openFile(true /*GENERIC_WRITE*/);
             if (hFile == INVALID_HANDLE_VALUE)
             {
                 if (::GetLastError() == ERROR_ACCESS_DENIED) //fails if file is read-only (or for "other" reasons)
@@ -897,7 +889,7 @@ void setWriteTimeNative(const Zstring& itemPath,
                         continue;
 
                 //2. be a *little* fancy
-                hFile = openFile(false);
+                hFile = openFile(false /*FILE_WRITE_ATTRIBUTES*/);
                 if (hFile == INVALID_HANDLE_VALUE)
                 {
                     const DWORD ec = ::GetLastError(); //copy before directly/indirectly making other system calls!
@@ -912,6 +904,25 @@ void setWriteTimeNative(const Zstring& itemPath,
             break;
         }
         ZEN_ON_SCOPE_EXIT(::CloseHandle(hFile));
+
+#if 0 //waiting for user feedback...
+#ifdef ZEN_WIN_VISTA_AND_LATER 
+		//bugs, bugs, bugs.... on "SharePoint" SetFileAttributes() seems to affect file modification time: http://www.freefilesync.org/forum/viewtopic.php?t=3699
+		//on Vista we can avoid reopening the file (and the SharePoint bug)
+ZEN_ON_SCOPE_EXIT(
+        if (attribsToRestore != INVALID_FILE_ATTRIBUTES)
+		{
+                    FILE_BASIC_INFO basicInfo = {};
+                    basicInfo.FileAttributes = attribsToRestore;
+                    ::SetFileInformationByHandle(hFile,              //__in  HANDLE hFile,
+                                                 FileBasicInfo,      //__in  FILE_INFO_BY_HANDLE_CLASS FileInformationClass,
+                                                 &basicInfo,         //__in  LPVOID lpFileInformation,
+                                                 sizeof(basicInfo)); //__in  DWORD dwBufferSize
+			attribsToRestore = INVALID_FILE_ATTRIBUTES;
+		}
+    );
+#endif
+#endif
 
         setFileTimeByHandle(hFile, creationTime, lastWriteTime, itemPath); //throw FileError
     }
@@ -951,8 +962,8 @@ void setWriteTimeNative(const Zstring& itemPath, const struct ::timespec& modTim
     [2015-03-09]
      - cannot reproduce issues with NTFS and utimensat() on Ubuntu
      - utimensat() is supposed to obsolete utime/utimes and is also used by "cp" and "touch"
-		=> let's give utimensat another chance:
-		using open()/futimens() for regular files and utimensat(AT_SYMLINK_NOFOLLOW) for symlinks is consistent with "cp" and "touch"!
+        => let's give utimensat another chance:
+        using open()/futimens() for regular files and utimensat(AT_SYMLINK_NOFOLLOW) for symlinks is consistent with "cp" and "touch"!
     */
     struct ::timespec newTimes[2] = {};
     newTimes[0].tv_sec = ::time(nullptr); //access time; using UTIME_OMIT for tv_nsec would trigger even more bugs: http://www.freefilesync.org/forum/viewtopic.php?t=1701
@@ -960,12 +971,12 @@ void setWriteTimeNative(const Zstring& itemPath, const struct ::timespec& modTim
 
     if (procSl == ProcSymlink::FOLLOW)
     {
-		//hell knows why files on gvfs-mounted Samba shares fail to open(O_WRONLY) returning EOPNOTSUPP:
-		//http://www.freefilesync.org/forum/viewtopic.php?t=2803 => utimensat() works
+        //hell knows why files on gvfs-mounted Samba shares fail to open(O_WRONLY) returning EOPNOTSUPP:
+        //http://www.freefilesync.org/forum/viewtopic.php?t=2803 => utimensat() works
         if (::utimensat(AT_FDCWD, itemPath.c_str(), newTimes, 0) == 0)
-			return;
+            return;
 
-		//in other cases utimensat() returns EINVAL for CIFS/NTFS drives, but open+futimens works: http://www.freefilesync.org/forum/viewtopic.php?t=387
+        //in other cases utimensat() returns EINVAL for CIFS/NTFS drives, but open+futimens works: http://www.freefilesync.org/forum/viewtopic.php?t=387
         const int fdFile = ::open(itemPath.c_str(), O_WRONLY);
         if (fdFile == -1)
             THROW_LAST_FILE_ERROR(replaceCpy(_("Cannot write modification time of %x."), L"%x", fmtPath(itemPath)), L"open");
@@ -1659,7 +1670,7 @@ void zen::copySymlink(const Zstring& sourceLink, const Zstring& targetLink, bool
     if (::lstat(sourceLink.c_str(), &sourceInfo) != 0)
         THROW_LAST_FILE_ERROR(replaceCpy(_("Cannot read file attributes of %x."), L"%x", fmtPath(sourceLink)), L"lstat");
 
-#ifdef ZEN_LINUX 
+#ifdef ZEN_LINUX
     setWriteTimeNative(targetLink, sourceInfo.st_mtim, ProcSymlink::DIRECT); //throw FileError
 #elif defined ZEN_MAC
     if (hasNativeSupportForExtendedAtrributes(targetLink)) //throw FileError
@@ -1899,14 +1910,9 @@ InSyncAttributes copyFileWindowsBackupStream(const Zstring& sourceFile, //throw 
 
         throw FileError(errorMsg, errorDescr);
     }
-#ifndef ZEN_WIN_VISTA_AND_LATER
-    ZEN_ON_SCOPE_FAIL(try { removeFile(targetFile); }
-    catch (FileError&) {} ); //transactional behavior: guard just after opening target and before managing hFileTarget
-#endif
-
+#ifdef ZEN_WIN_VISTA_AND_LATER
     ZEN_ON_SCOPE_EXIT(::CloseHandle(hFileTarget));
 
-#ifdef ZEN_WIN_VISTA_AND_LATER
     //no need for ::DeleteFile(), we already have an open handle! Maybe this also prevents needless buffer-flushing in ::CloseHandle()??? Anyway, same behavior like ::CopyFileEx()
     ZEN_ON_SCOPE_FAIL
     (
@@ -1918,6 +1924,11 @@ InSyncAttributes copyFileWindowsBackupStream(const Zstring& sourceFile, //throw 
                                           sizeof(di)))         //_In_ DWORD                     dwBufferSize
         assert(false);
     );
+#else
+    ZEN_ON_SCOPE_FAIL(try { removeFile(targetFile); }
+    catch (FileError&) {} ); //transactional behavior: guard just after opening target and before managing hFileTarget
+
+    ZEN_ON_SCOPE_EXIT(::CloseHandle(hFileTarget));
 #endif
 
     //----------------------------------------------------------------------
@@ -1985,8 +1996,8 @@ InSyncAttributes copyFileWindowsBackupStream(const Zstring& sourceFile, //throw 
     LPVOID contextWrite = nullptr; //
 
     ZEN_ON_SCOPE_EXIT(
-        if (contextRead ) ::BackupRead (0, nullptr, 0, nullptr, true, false, &contextRead); //MSDN: "lpContext must be passed [...] all other parameters are ignored."
-        if (contextWrite) ::BackupWrite(0, nullptr, 0, nullptr, true, false, &contextWrite); );
+        if (contextRead ) ::BackupRead (0, nullptr, 0, nullptr, true, false, &contextRead);     //MSDN: "lpContext must be passed [...] all other parameters are ignored."
+        if (contextWrite) ::BackupWrite(0, nullptr, 0, nullptr, true, false, &contextWrite); ); //
 
     //stream-copy sourceFile to targetFile
     bool eof = false;

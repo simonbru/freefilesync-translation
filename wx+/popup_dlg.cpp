@@ -121,9 +121,12 @@ public:
 		int maxWidth  = 500;
 		int maxHeight = 400; //try to determine better value based on actual display resolution:
 
-		int disPos = wxDisplay::GetFromWindow(parent); //window must be visible
+		if (parent)
+		{
+		const int disPos = wxDisplay::GetFromWindow(parent); //window must be visible
 		if (disPos != wxNOT_FOUND)
 			maxHeight = wxDisplay(disPos).GetClientArea().GetHeight() *  2 / 3;
+		}
 
         assert(!cfg.textMain.empty() || !cfg.textDetail.empty());
         if (!cfg.textMain.empty())

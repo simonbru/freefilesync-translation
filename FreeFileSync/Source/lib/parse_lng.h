@@ -193,56 +193,55 @@ struct Token
 class KnownTokens
 {
 public:
+	KnownTokens() {} //clang wants it, clang gets it
+
     using TokenMap = std::map<Token::Type, std::string>;
 
-    static const TokenMap& getList()
-    {
-        static const TokenMap tokens = getTokens();
-        return tokens;
-    }
+    const TokenMap& getList() const { return tokens; }
 
-    static std::string text(Token::Type t)
+    std::string text(Token::Type t) const
     {
-        auto it = getList().find(t);
-        return it != getList().end() ? it->second : std::string();
+        auto it = tokens.find(t);
+        if (it != tokens.end())
+            return it->second;
+        assert(false);
+        return std::string();
     }
 
 private:
-    static TokenMap getTokens()
+    const TokenMap tokens =
     {
-        TokenMap tokens;
         //header information
-        tokens.emplace(Token::TK_HEADER_BEGIN,       "<header>");
-        tokens.emplace(Token::TK_HEADER_END,         "</header>");
-        tokens.emplace(Token::TK_LANG_NAME_BEGIN,    "<language>");
-        tokens.emplace(Token::TK_LANG_NAME_END,      "</language>");
-        tokens.emplace(Token::TK_TRANS_NAME_BEGIN,   "<translator>");
-        tokens.emplace(Token::TK_TRANS_NAME_END,     "</translator>");
-        tokens.emplace(Token::TK_LOCALE_NAME_BEGIN,  "<locale>");
-        tokens.emplace(Token::TK_LOCALE_NAME_END,    "</locale>");
-        tokens.emplace(Token::TK_FLAG_FILE_BEGIN,    "<image>");
-        tokens.emplace(Token::TK_FLAG_FILE_END,      "</image>");
-        tokens.emplace(Token::TK_PLURAL_COUNT_BEGIN, "<plural_count>");
-        tokens.emplace(Token::TK_PLURAL_COUNT_END,   "</plural_count>");
-        tokens.emplace(Token::TK_PLURAL_DEF_BEGIN,   "<plural_definition>");
-        tokens.emplace(Token::TK_PLURAL_DEF_END,     "</plural_definition>");
+        { Token::TK_HEADER_BEGIN,       "<header>" },
+        { Token::TK_HEADER_END,         "</header>" },
+        { Token::TK_LANG_NAME_BEGIN,    "<language>" },
+        { Token::TK_LANG_NAME_END,      "</language>" },
+        { Token::TK_TRANS_NAME_BEGIN,   "<translator>" },
+        { Token::TK_TRANS_NAME_END,     "</translator>" },
+        { Token::TK_LOCALE_NAME_BEGIN,  "<locale>" },
+        { Token::TK_LOCALE_NAME_END,    "</locale>" },
+        { Token::TK_FLAG_FILE_BEGIN,    "<image>" },
+        { Token::TK_FLAG_FILE_END,      "</image>" },
+        { Token::TK_PLURAL_COUNT_BEGIN, "<plural_count>" },
+        { Token::TK_PLURAL_COUNT_END,   "</plural_count>" },
+        { Token::TK_PLURAL_DEF_BEGIN,   "<plural_definition>" },
+        { Token::TK_PLURAL_DEF_END,     "</plural_definition>" },
 
         //item level
-        tokens.emplace(Token::TK_SRC_BEGIN,    "<source>");
-        tokens.emplace(Token::TK_SRC_END,      "</source>");
-        tokens.emplace(Token::TK_TRG_BEGIN,    "<target>");
-        tokens.emplace(Token::TK_TRG_END,      "</target>");
-        tokens.emplace(Token::TK_PLURAL_BEGIN, "<pluralform>");
-        tokens.emplace(Token::TK_PLURAL_END,   "</pluralform>");
-        return tokens;
-    }
+        { Token::TK_SRC_BEGIN,    "<source>" },
+        { Token::TK_SRC_END,      "</source>" },
+        { Token::TK_TRG_BEGIN,    "<target>" },
+        { Token::TK_TRG_END,      "</target>" },
+        { Token::TK_PLURAL_BEGIN, "<pluralform>" },
+        { Token::TK_PLURAL_END,   "</pluralform>" },
+    };
 };
 
 
 class Scanner
 {
 public:
-    Scanner(const std::string& fileStream) : stream(fileStream), pos(stream.begin())
+    Scanner(const std::string& byteStream) : stream(byteStream), pos(stream.begin())
     {
         if (zen::startsWith(stream, zen::BYTE_ORDER_MARK_UTF8))
             pos += zen::strLength(zen::BYTE_ORDER_MARK_UTF8);
@@ -256,7 +255,7 @@ public:
         if (pos == stream.end())
             return Token(Token::TK_END);
 
-        for (const auto& token : KnownTokens::getList())
+        for (const auto& token : tokens.getList())
             if (startsWith(token.second))
             {
                 pos += token.second.size();
@@ -304,7 +303,7 @@ public:
 private:
     bool startsWithKnownTag() const
     {
-        return std::any_of(KnownTokens::getList().begin(), KnownTokens::getList().end(),
+        return std::any_of(tokens.getList().begin(), tokens.getList().end(),
         [&](const KnownTokens::TokenMap::value_type& p) { return startsWith(p.second); });
     }
 
@@ -330,6 +329,7 @@ private:
 
     const std::string stream;
     std::string::const_iterator pos;
+    const KnownTokens tokens; //no need for static non-POD!
 };
 
 
@@ -459,10 +459,10 @@ private:
         if (original.empty())
             throw ParsingError(L"Translation source text is empty", scn.posRow(), scn.posCol());
 
-		if (!isValidUtf8(original))
-			throw ParsingError(L"Translation source text contains UTF-8 encoding error", scn.posRow(), scn.posCol());
-		if (!isValidUtf8(translation))
-			throw ParsingError(L"Translation text contains UTF-8 encoding error", scn.posRow(), scn.posCol());
+        if (!isValidUtf8(original))
+            throw ParsingError(L"Translation source text contains UTF-8 encoding error", scn.posRow(), scn.posCol());
+        if (!isValidUtf8(translation))
+            throw ParsingError(L"Translation text contains UTF-8 encoding error", scn.posRow(), scn.posCol());
 
         if (!translation.empty())
         {
@@ -535,10 +535,10 @@ private:
         if (!contains(original.second, "%x"))
             throw ParsingError(L"Plural form source text does not contain %x placeholder", scn.posRow(), scn.posCol());
 
-		if (!isValidUtf8(original.first) || !isValidUtf8(original.second))
-			throw ParsingError(L"Translation source text contains UTF-8 encoding error", scn.posRow(), scn.posCol());
-		if (std::any_of(translation.begin(), translation.end(), [](const std::string& pform) { return !isValidUtf8(pform); }))
-			throw ParsingError(L"Translation text contains UTF-8 encoding error", scn.posRow(), scn.posCol());
+        if (!isValidUtf8(original.first) || !isValidUtf8(original.second))
+            throw ParsingError(L"Translation source text contains UTF-8 encoding error", scn.posRow(), scn.posCol());
+        if (std::any_of(translation.begin(), translation.end(), [](const std::string& pform) { return !isValidUtf8(pform); }))
+        throw ParsingError(L"Translation text contains UTF-8 encoding error", scn.posRow(), scn.posCol());
 
         if (!translation.empty())
         {
@@ -655,35 +655,37 @@ void formatMultiLineText(std::string& text)
 
 std::string generateLng(const TranslationUnorderedList& in, const TransHeader& header)
 {
+    const KnownTokens tokens; //no need for static non-POD!
+
     std::string out;
     //header
-    out += KnownTokens::text(Token::TK_HEADER_BEGIN) + '\n';
+    out += tokens.text(Token::TK_HEADER_BEGIN) + '\n';
 
-    out += '\t' + KnownTokens::text(Token::TK_LANG_NAME_BEGIN);
+    out += '\t' + tokens.text(Token::TK_LANG_NAME_BEGIN);
     out += header.languageName;
-    out += KnownTokens::text(Token::TK_LANG_NAME_END) + '\n';
+    out += tokens.text(Token::TK_LANG_NAME_END) + '\n';
 
-    out += '\t' + KnownTokens::text(Token::TK_TRANS_NAME_BEGIN);
+    out += '\t' + tokens.text(Token::TK_TRANS_NAME_BEGIN);
     out += header.translatorName;
-    out += KnownTokens::text(Token::TK_TRANS_NAME_END) + '\n';
+    out += tokens.text(Token::TK_TRANS_NAME_END) + '\n';
 
-    out += '\t' + KnownTokens::text(Token::TK_LOCALE_NAME_BEGIN);
+    out += '\t' + tokens.text(Token::TK_LOCALE_NAME_BEGIN);
     out += header.localeName;
-    out += KnownTokens::text(Token::TK_LOCALE_NAME_END) + '\n';
+    out += tokens.text(Token::TK_LOCALE_NAME_END) + '\n';
 
-    out += '\t' + KnownTokens::text(Token::TK_FLAG_FILE_BEGIN);
+    out += '\t' + tokens.text(Token::TK_FLAG_FILE_BEGIN);
     out += header.flagFile;
-    out += KnownTokens::text(Token::TK_FLAG_FILE_END) + '\n';
+    out += tokens.text(Token::TK_FLAG_FILE_END) + '\n';
 
-    out += '\t' + KnownTokens::text(Token::TK_PLURAL_COUNT_BEGIN);
+    out += '\t' + tokens.text(Token::TK_PLURAL_COUNT_BEGIN);
     out += zen::numberTo<std::string>(header.pluralCount);
-    out += KnownTokens::text(Token::TK_PLURAL_COUNT_END) + '\n';
+    out += tokens.text(Token::TK_PLURAL_COUNT_END) + '\n';
 
-    out += '\t' + KnownTokens::text(Token::TK_PLURAL_DEF_BEGIN);
+    out += '\t' + tokens.text(Token::TK_PLURAL_DEF_BEGIN);
     out += header.pluralDefinition;
-    out += KnownTokens::text(Token::TK_PLURAL_DEF_END) + '\n';
+    out += tokens.text(Token::TK_PLURAL_DEF_END) + '\n';
 
-    out += KnownTokens::text(Token::TK_HEADER_END) + '\n';
+    out += tokens.text(Token::TK_HEADER_END) + '\n';
 
     out += '\n';
 
@@ -696,13 +698,13 @@ std::string generateLng(const TranslationUnorderedList& in, const TransHeader& h
         formatMultiLineText(original);
         formatMultiLineText(translation);
 
-        out += KnownTokens::text(Token::TK_SRC_BEGIN);
+        out += tokens.text(Token::TK_SRC_BEGIN);
         out += original;
-        out += KnownTokens::text(Token::TK_SRC_END) + '\n';
+        out += tokens.text(Token::TK_SRC_END) + '\n';
 
-        out += KnownTokens::text(Token::TK_TRG_BEGIN);
+        out += tokens.text(Token::TK_TRG_BEGIN);
         out += translation;
-        out += KnownTokens::text(Token::TK_TRG_END) + '\n' + '\n';
+        out += tokens.text(Token::TK_TRG_END) + '\n' + '\n';
     },
     [&](const TranslationPluralMap::value_type& transPlural)
     {
@@ -713,27 +715,27 @@ std::string generateLng(const TranslationUnorderedList& in, const TransHeader& h
         formatMultiLineText(engSingular);
         formatMultiLineText(engPlural);
 
-        out += KnownTokens::text(Token::TK_SRC_BEGIN) + '\n';
-        out += KnownTokens::text(Token::TK_PLURAL_BEGIN);
+        out += tokens.text(Token::TK_SRC_BEGIN) + '\n';
+        out += tokens.text(Token::TK_PLURAL_BEGIN);
         out += engSingular;
-        out += KnownTokens::text(Token::TK_PLURAL_END) + '\n';
-        out += KnownTokens::text(Token::TK_PLURAL_BEGIN);
+        out += tokens.text(Token::TK_PLURAL_END) + '\n';
+        out += tokens.text(Token::TK_PLURAL_BEGIN);
         out += engPlural;
-        out += KnownTokens::text(Token::TK_PLURAL_END) + '\n';
-        out += KnownTokens::text(Token::TK_SRC_END) + '\n';
+        out += tokens.text(Token::TK_PLURAL_END) + '\n';
+        out += tokens.text(Token::TK_SRC_END) + '\n';
 
-        out += KnownTokens::text(Token::TK_TRG_BEGIN);
+        out += tokens.text(Token::TK_TRG_BEGIN);
         if (!forms.empty())
             out += '\n';
         for (std::string plForm : forms)
         {
             formatMultiLineText(plForm);
 
-            out += KnownTokens::text(Token::TK_PLURAL_BEGIN);
+            out += tokens.text(Token::TK_PLURAL_BEGIN);
             out += plForm;
-            out += KnownTokens::text(Token::TK_PLURAL_END) + '\n';
+            out += tokens.text(Token::TK_PLURAL_END) + '\n';
         }
-        out += KnownTokens::text(Token::TK_TRG_END) + '\n' + '\n';
+        out += tokens.text(Token::TK_TRG_END) + '\n' + '\n';
     });
 
     assert(!zen::contains(out, "\r\n") && !zen::contains(out, "\r"));

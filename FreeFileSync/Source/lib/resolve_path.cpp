@@ -6,6 +6,7 @@
 #include <zen/utf.h>
 #include <zen/optional.h>
 #include <zen/scope_guard.h>
+#include <zen/globals.h>
 
 #ifdef ZEN_WIN
     #include <zen/long_path_prefix.h>
@@ -143,13 +144,10 @@ class CsidlConstants
 public:
     using CsidlToDirMap = std::map<Zstring, Zstring, LessFilePath>; //case-insensitive!
 
-    static const CsidlToDirMap& get()
+    static std::shared_ptr<const CsidlToDirMap> get()
     {
-#if defined _MSC_VER && _MSC_VER < 1900
-#error function scope static initialization is not yet thread-safe!
-#endif
-        static const CsidlToDirMap inst = createCsidlMapping();
-        return inst;
+        static Global<const CsidlToDirMap> inst(std::make_unique<const CsidlToDirMap>(createCsidlMapping()));
+        return inst.get();
     }
 
 private:
@@ -202,7 +200,7 @@ private:
 
         addCsidl(CSIDL_MYMUSIC,          L"csidl_Music");           // C:\Users\<user>\Music
         addCsidl(CSIDL_COMMON_MUSIC,     L"csidl_PublicMusic");     // C:\Users\Public\Music
-		
+
         addCsidl(CSIDL_MYVIDEO,          L"csidl_Videos");          // C:\Users\<user>\Videos
         addCsidl(CSIDL_COMMON_VIDEO,     L"csidl_PublicVideos");    // C:\Users\Public\Videos
 
@@ -300,12 +298,14 @@ Opt<Zstring> resolveMacro(const Zstring& macro, //macro without %-characters
 
 #ifdef ZEN_WIN
     //try to resolve as CSIDL value
+    if (auto csidlMap = CsidlConstants::get())
     {
-        const auto& csidlMap = CsidlConstants::get();
-        auto it = csidlMap.find(macro);
-        if (it != csidlMap.end())
+        auto it = csidlMap->find(macro);
+        if (it != csidlMap->end())
             return it->second;
     }
+    else
+        assert(false); //access during shut down?
 #endif
 
     return NoValue();
@@ -512,8 +512,11 @@ void getDirectoryAliasesRecursive(const Zstring& dirpath, std::set<Zstring, Less
         addEnvVar(L"Temp");             // C:\Windows\Temp
 
         //add CSIDL values: https://msdn.microsoft.com/en-us/library/bb762494
-        const auto& csidlMap = CsidlConstants::get();
-        envToDir.insert(csidlMap.begin(), csidlMap.end());
+
+        if (auto csidlMap = CsidlConstants::get())
+            envToDir.insert(csidlMap->begin(), csidlMap->end());
+        else
+            assert(false); //access during shut down?
 
 #elif defined ZEN_LINUX || defined ZEN_MAC
         addEnvVar("HOME"); //Linux: /home/<user>  Mac: /Users/<user>
@@ -609,11 +612,12 @@ namespace
 class NetworkConnector
 {
 public:
-    static NetworkConnector& getInstance()
+    static std::shared_ptr<NetworkConnector> getInstance()
     {
-        static NetworkConnector inst;
-        return inst; //meyers singleton: avoid static initialization order problem in global namespace!
+        static Global<NetworkConnector> inst(std::make_unique<NetworkConnector>());
+        return inst.get(); //meyers singleton: avoid static initialization order problem in global namespace!
     }
+    NetworkConnector() {}
 
     struct Credentials
     {
@@ -670,7 +674,6 @@ public:
     }
 
 private:
-    NetworkConnector() {}
     NetworkConnector           (const NetworkConnector&) = delete;
     NetworkConnector& operator=(const NetworkConnector&) = delete;
 
@@ -801,7 +804,11 @@ void zen::connectNetworkShare(const Zstring& dirpathOrig, bool allowUserInteract
                     cred.localName  = driveLetter;
                     cred.remoteName = networkShare;
                     cred.allowUserInteraction = allowUserInteraction;
-                    NetworkConnector::getInstance().establishConnection(cred); //throw FileError
+
+                    if (std::shared_ptr<NetworkConnector> nc = NetworkConnector::getInstance())
+                        nc->establishConnection(cred); //throw FileError
+                    else
+                        throw FileError(replaceCpy(_("Unable to connect to %x."), L"%x", fmtPath(networkShare)), L"NetworkConnector already shut down.");
                 }
             }
         }
@@ -827,7 +834,10 @@ void zen::connectNetworkShare(const Zstring& dirpathOrig, bool allowUserInteract
                 NetworkConnector::Credentials cred = {};
                 cred.remoteName = networkShare;
                 cred.allowUserInteraction = allowUserInteraction;
-                NetworkConnector::getInstance().establishConnection(cred); //throw FileError
+                if (std::shared_ptr<NetworkConnector> nc = NetworkConnector::getInstance())
+                    nc->establishConnection(cred); //throw FileError
+                else
+                    throw FileError(replaceCpy(_("Unable to connect to %x."), L"%x", fmtPath(networkShare)), L"NetworkConnector already shut down.");
             }
         }
     }

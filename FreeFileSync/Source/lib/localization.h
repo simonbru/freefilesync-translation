@@ -17,9 +17,9 @@ struct TranslationInfo
 {
     wxLanguage languageID = wxLANGUAGE_UNKNOWN;
     std::wstring languageName;
-    std::wstring languageFile;
     std::wstring translatorName;
     std::wstring languageFlag;
+    Zstring langFilePath;
 };
 const std::vector<TranslationInfo>& getExistingTranslations();
 

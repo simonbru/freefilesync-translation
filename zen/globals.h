@@ -13,21 +13,21 @@
 
 namespace zen
 {
-//solve static destruction order fiasco by providing scoped ownership and serialized access to global variables
+//solve static destruction order fiasco by providing shared ownership and serialized access to global variables
 template <class T>
 class Global
 {
 public:
-	Global() {}
+	Global() { static_assert(std::is_trivially_destructible<Pod>::value, "this memory needs to live forever"); }
 	explicit Global(std::unique_ptr<T>&& newInst) { set(std::move(newInst)); }
 	~Global() { set(nullptr); }
 	
     std::shared_ptr<T> get() //=> return std::shared_ptr to let instance life time be handled by caller (MT usage!)
     {
-        while (spinLock.exchange(true)) ;
-        ZEN_ON_SCOPE_EXIT(spinLock = false);
-        if (inst)
-            return *inst;
+        while (pod.spinLock.exchange(true)) ;
+        ZEN_ON_SCOPE_EXIT(pod.spinLock = false);
+        if (pod.inst)
+            return *pod.inst;
         return nullptr;
     }
 
@@ -37,21 +37,28 @@ public:
         if (newInst)
             tmpInst = new std::shared_ptr<T>(std::move(newInst));
         {
-            while (spinLock.exchange(true)) ;
-            ZEN_ON_SCOPE_EXIT(spinLock = false);
-            std::swap(inst, tmpInst);
+            while (pod.spinLock.exchange(true)) ;
+            ZEN_ON_SCOPE_EXIT(pod.spinLock = false);
+            std::swap(pod.inst, tmpInst);
         }
         delete tmpInst;
     }
 
 private:
-    //avoid static destruction order fiasco: there may be accesses to "Global<T>::get()" during process shutdown
-    //e.g. show message in debug_minidump.cpp or some detached thread assembling an error message!
-    //=> use trivially-destructible POD only!!!
-    std::shared_ptr<T>* inst = nullptr;
-    //serialize access: can't use std::mutex because of non-trival destructor
-    std::atomic<bool> spinLock { false };
+	//avoid static destruction order fiasco: there may be accesses to "Global<T>::get()" during process shutdown
+	//e.g. _("") used by message in debug_minidump.cpp or by some detached thread assembling an error message!
+	//=> use trivially-destructible POD only!!!
+	struct Pod
+	{
+		std::shared_ptr<T>* inst = nullptr;
+		//serialize access; can't use std::mutex: has non-trival destructor
+		std::atomic<bool> spinLock { false };
+	} pod;
 };
+
+#if defined _MSC_VER && _MSC_VER < 1900
+#error function scope static initialization is not yet thread-safe!
+#endif
 }
 
 #endif //GLOBALS_H_8013740213748021573485

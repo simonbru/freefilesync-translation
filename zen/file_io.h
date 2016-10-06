@@ -18,9 +18,9 @@
 namespace zen
 {
 #ifdef ZEN_WIN
-    static const char LINE_BREAK[] = "\r\n";
+    const char LINE_BREAK[] = "\r\n";
 #elif defined ZEN_LINUX || defined ZEN_MAC
-    static const char LINE_BREAK[] = "\n"; //since OS X apple uses newline, too
+    const char LINE_BREAK[] = "\n"; //since OS X apple uses newline, too
 #endif
 
 //OS-buffered file IO optimized for sequential read/write accesses + better error reporting + long path support + following symlinks

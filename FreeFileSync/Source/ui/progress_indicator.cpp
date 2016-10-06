@@ -653,7 +653,7 @@ public:
         wxRect rectTmp = rect;
 
         //-------------- draw item separation line -----------------
-        wxDCPenChanger dummy2(dc, wxPen(getColorGridLine(), 1, wxSOLID));
+        wxDCPenChanger dummy2(dc, getColorGridLine());
         const bool drawBottomLine = [&] //don't separate multi-line messages
         {
             if (msgView_)

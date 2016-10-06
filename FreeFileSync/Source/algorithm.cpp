@@ -19,8 +19,8 @@
 #include "fs/concrete.h"
 #include "fs/native.h"
 
-#ifdef ZEN_WIN 
-#include <zen/long_path_prefix.h> //
+#ifdef ZEN_WIN
+    #include <zen/long_path_prefix.h> //
 #endif
 
 using namespace zen;
@@ -1621,8 +1621,8 @@ void TempFileBuffer::createTempFiles(const std::set<FileDetails>& workLoad, Proc
             auto onNotifyCopyStatus = [&](std::int64_t bytesDelta) { statReporter.reportDelta(0, bytesDelta); };
             AFS::copyFileTransactional(details.path, createItemPathNative(tempFilePath), //throw FileError, ErrorFileLocked
                                        false /*copyFilePermissions*/, true /*transactionalCopy*/, nullptr /*onDeleteTargetFile*/, onNotifyCopyStatus);
-#ifdef ZEN_WIN 
-        ::SetFileAttributes(applyLongPathPrefix(tempFilePath).c_str(), FILE_ATTRIBUTE_READONLY); //try to... => user get's a warning within 3rd-party apps
+#ifdef ZEN_WIN
+            ::SetFileAttributes(applyLongPathPrefix(tempFilePath).c_str(), FILE_ATTRIBUTE_READONLY); //try to... => user get's a warning within 3rd-party apps
 #endif
             statReporter.reportDelta(1, 0);
 

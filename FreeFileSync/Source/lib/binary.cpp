@@ -6,7 +6,8 @@
 
 #include "binary.h"
 #include <vector>
-#include <zen/tick_count.h>
+#include <chrono>
+//#include <zen/tick_count.h>
 
 using namespace zen;
 using AFS = AbstractFileSystem;
@@ -33,7 +34,6 @@ buffer  MB/s
 */
 
 const size_t BLOCK_SIZE_MAX =  16 * 1024 * 1024;
-const std::int64_t TICKS_PER_SEC = ticksPerSec();
 
 
 struct StreamReader
@@ -50,13 +50,13 @@ struct StreamReader
         assert(!eof);
         if (eof) return;
 
-        const TickVal startTime = getTicks();
+        const auto startTime = std::chrono::steady_clock::now();
 
         buffer.resize(buffer.size() + dynamicBlockSize);
         const size_t bytesRead = stream->tryRead(&*(buffer.end() - dynamicBlockSize), dynamicBlockSize); //throw FileError; may return short, only 0 means EOF! => CONTRACT: bytesToRead > 0
         buffer.resize(buffer.size() - dynamicBlockSize + bytesRead); //caveat: unsigned arithmetics
 
-        const TickVal stopTime = getTicks();
+        const auto stopTime = std::chrono::steady_clock::now();
 
         //report bytes processed
         if (notifyProgress_)
@@ -72,26 +72,23 @@ struct StreamReader
             return;
         }
 
-        if (TICKS_PER_SEC > 0)
+        size_t proposedBlockSize = 0;
+        const auto loopTimeMs = std::chrono::duration_cast<std::chrono::milliseconds>(stopTime - startTime).count();
+
+        if (loopTimeMs >= 100)
+            lastDelayViolation = stopTime;
+
+        //avoid "flipping back": e.g. DVD-ROMs read 32MB at once, so first read may be > 500 ms, but second one will be 0ms!
+        if (stopTime >= lastDelayViolation + std::chrono::seconds(2))
         {
-            size_t proposedBlockSize = 0;
-            const std::int64_t loopTimeMs = dist(startTime, stopTime) * 1000 / TICKS_PER_SEC; //unit: [ms]
-
-            if (loopTimeMs >= 100)
-                lastDelayViolation = stopTime;
-
-            //avoid "flipping back": e.g. DVD-ROMs read 32MB at once, so first read may be > 500 ms, but second one will be 0ms!
-            if (dist(lastDelayViolation, stopTime) / TICKS_PER_SEC >= 2)
-            {
-                lastDelayViolation = stopTime;
-                proposedBlockSize = dynamicBlockSize * 2;
-            }
-            if (loopTimeMs > 500)
-                proposedBlockSize = dynamicBlockSize / 2;
-
-            if (defaultBlockSize <= proposedBlockSize && proposedBlockSize <= BLOCK_SIZE_MAX)
-                dynamicBlockSize = proposedBlockSize;
+            lastDelayViolation = stopTime;
+            proposedBlockSize = dynamicBlockSize * 2;
         }
+        if (loopTimeMs > 500)
+            proposedBlockSize = dynamicBlockSize / 2;
+
+        if (defaultBlockSize <= proposedBlockSize && proposedBlockSize <= BLOCK_SIZE_MAX)
+            dynamicBlockSize = proposedBlockSize;
     }
 
     bool isEof() const { return eof; }
@@ -102,7 +99,7 @@ private:
     size_t dynamicBlockSize;
     const std::function<void(std::int64_t bytesDelta)> notifyProgress_;
     size_t& unevenBytes_;
-    TickVal lastDelayViolation = getTicks();
+    std::chrono::steady_clock::time_point lastDelayViolation = std::chrono::steady_clock::now();
     bool eof = false;
 };
 }

@@ -2073,7 +2073,7 @@ SftpSetupDlgGenerated::SftpSetupDlgGenerated( wxWindow* parent, wxWindowID id, c
 	m_panel41->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_WINDOW ) );
 	
 	wxBoxSizer* bSizer185;
-	bSizer185 = new wxBoxSizer( wxHORIZONTAL );
+	bSizer185 = new wxBoxSizer( wxVERTICAL );
 	
 	wxFlexGridSizer* fgSizer16;
 	fgSizer16 = new wxFlexGridSizer( 0, 2, 0, 0 );
@@ -2176,13 +2176,97 @@ SftpSetupDlgGenerated::SftpSetupDlgGenerated( wxWindow* parent, wxWindowID id, c
 	fgSizer16->Add( bSizer206, 0, wxALIGN_CENTER_VERTICAL|wxALL|wxEXPAND, 5 );
 	
 	
-	bSizer185->Add( fgSizer16, 1, wxALL, 5 );
+	bSizer185->Add( fgSizer16, 0, wxALL|wxEXPAND, 5 );
 	
 	
 	m_panel41->SetSizer( bSizer185 );
 	m_panel41->Layout();
 	bSizer185->Fit( m_panel41 );
-	bSizer134->Add( m_panel41, 1, wxEXPAND, 5 );
+	bSizer134->Add( m_panel41, 0, wxEXPAND, 5 );
+	
+	m_staticline571 = new wxStaticLine( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
+	bSizer134->Add( m_staticline571, 0, wxEXPAND, 5 );
+	
+	wxBoxSizer* bSizer219;
+	bSizer219 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText1361 = new wxStaticText( this, wxID_ANY, _("Performance settings:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText1361->Wrap( -1 );
+	bSizer219->Add( m_staticText1361, 0, wxALL|wxALIGN_CENTER_VERTICAL, 10 );
+	
+	
+	bSizer219->Add( 0, 0, 1, wxEXPAND, 5 );
+	
+	m_hyperlink171 = new wxHyperlinkCtrl( this, wxID_ANY, _("How to get best performance?"), wxEmptyString, wxDefaultPosition, wxDefaultSize, wxHL_DEFAULT_STYLE );
+	bSizer219->Add( m_hyperlink171, 0, wxALL|wxALIGN_CENTER_VERTICAL, 10 );
+	
+	
+	bSizer134->Add( bSizer219, 0, wxEXPAND, 5 );
+	
+	m_staticline57 = new wxStaticLine( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
+	bSizer134->Add( m_staticline57, 0, wxEXPAND, 5 );
+	
+	m_panel411 = new wxPanel( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0 );
+	m_panel411->SetBackgroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_WINDOW ) );
+	
+	wxBoxSizer* bSizer1851;
+	bSizer1851 = new wxBoxSizer( wxVERTICAL );
+	
+	wxFlexGridSizer* fgSizer1611;
+	fgSizer1611 = new wxFlexGridSizer( 0, 3, 0, 0 );
+	fgSizer1611->AddGrowableCol( 1 );
+	fgSizer1611->SetFlexibleDirection( wxBOTH );
+	fgSizer1611->SetNonFlexibleGrowMode( wxFLEX_GROWMODE_SPECIFIED );
+	
+	m_staticText12341 = new wxStaticText( m_panel411, wxID_ANY, _("SSH connections for directory reading:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText12341->Wrap( -1 );
+	fgSizer1611->Add( m_staticText12341, 0, wxTOP|wxBOTTOM|wxLEFT|wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT, 5 );
+	
+	m_spinCtrlConnectionCount = new wxSpinCtrl( m_panel411, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 70,-1 ), wxSP_ARROW_KEYS, 1, 2000000000, 1 );
+	fgSizer1611->Add( m_spinCtrlConnectionCount, 0, wxALL, 5 );
+	
+	m_staticText138111 = new wxStaticText( m_panel411, wxID_ANY, _("Suggested range: [1 - 10]"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText138111->Wrap( -1 );
+	m_staticText138111->SetForegroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_GRAYTEXT ) );
+	
+	fgSizer1611->Add( m_staticText138111, 0, wxALL|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	m_staticText1231111 = new wxStaticText( m_panel411, wxID_ANY, _("SFTP channels per connection:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText1231111->Wrap( -1 );
+	fgSizer1611->Add( m_staticText1231111, 0, wxALIGN_CENTER_VERTICAL|wxALIGN_RIGHT|wxTOP|wxBOTTOM|wxLEFT, 5 );
+	
+	m_spinCtrlChannelCount = new wxSpinCtrl( m_panel411, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize( 70,-1 ), wxSP_ARROW_KEYS, 1, 2000000000, 1 );
+	fgSizer1611->Add( m_spinCtrlChannelCount, 0, wxALL, 5 );
+	
+	m_button42 = new wxButton( m_panel411, wxID_ANY, _("Detect server limit"), wxDefaultPosition, wxDefaultSize, 0 );
+	fgSizer1611->Add( m_button42, 0, wxALL, 5 );
+	
+	
+	bSizer1851->Add( fgSizer1611, 0, wxALL, 5 );
+	
+	wxBoxSizer* bSizer220;
+	bSizer220 = new wxBoxSizer( wxHORIZONTAL );
+	
+	m_staticText138112 = new wxStaticText( m_panel411, wxID_ANY, _("Example:"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText138112->Wrap( -1 );
+	m_staticText138112->SetForegroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_GRAYTEXT ) );
+	
+	bSizer220->Add( m_staticText138112, 0, wxRIGHT|wxALIGN_CENTER_VERTICAL, 5 );
+	
+	m_staticText13811 = new wxStaticText( m_panel411, wxID_ANY, _("2 connections x 10 channels = 20 times faster directory reading"), wxDefaultPosition, wxDefaultSize, 0 );
+	m_staticText13811->Wrap( -1 );
+	m_staticText13811->SetForegroundColour( wxSystemSettings::GetColour( wxSYS_COLOUR_GRAYTEXT ) );
+	
+	bSizer220->Add( m_staticText13811, 0, wxALIGN_CENTER_VERTICAL, 5 );
+	
+	
+	bSizer1851->Add( bSizer220, 0, wxBOTTOM|wxRIGHT|wxLEFT, 10 );
+	
+	
+	m_panel411->SetSizer( bSizer1851 );
+	m_panel411->Layout();
+	bSizer1851->Fit( m_panel411 );
+	bSizer134->Add( m_panel411, 1, wxEXPAND, 5 );
 	
 	m_staticline12 = new wxStaticLine( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
 	bSizer134->Add( m_staticline12, 0, wxEXPAND, 5 );
@@ -2212,6 +2296,8 @@ SftpSetupDlgGenerated::SftpSetupDlgGenerated( wxWindow* parent, wxWindowID id, c
 	this->Connect( wxEVT_CLOSE_WINDOW, wxCloseEventHandler( SftpSetupDlgGenerated::OnClose ) );
 	m_checkBoxShowPassword->Connect( wxEVT_COMMAND_CHECKBOX_CLICKED, wxCommandEventHandler( SftpSetupDlgGenerated::OnToggleShowPassword ), NULL, this );
 	m_buttonSelectFolder->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SftpSetupDlgGenerated::OnBrowseSftpFolder ), NULL, this );
+	m_hyperlink171->Connect( wxEVT_COMMAND_HYPERLINK, wxHyperlinkEventHandler( SftpSetupDlgGenerated::OnHelpSftpPerformance ), NULL, this );
+	m_button42->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SftpSetupDlgGenerated::OnDetectServerChannelLimit ), NULL, this );
 	m_buttonOkay->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SftpSetupDlgGenerated::OnOkay ), NULL, this );
 	m_buttonCancel->Connect( wxEVT_COMMAND_BUTTON_CLICKED, wxCommandEventHandler( SftpSetupDlgGenerated::OnCancel ), NULL, this );
 }

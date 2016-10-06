@@ -46,7 +46,7 @@ namespace impl
 class FfsHelpController
 {
 public:
-    static FfsHelpController& getInstance()
+    static FfsHelpController& instance()
     {
         static FfsHelpController inst; //external linkage, despite inline definition!
         return inst;
@@ -54,7 +54,13 @@ public:
 
     void openSection(const wxString& section, wxWindow* parent)
     {
-        init();
+        //don't put in constructor: not needed if only uninitialize() is ever called!
+        if (!chmHlp)
+        {
+            chmHlp = std::make_unique<wxCHMHelpController>();
+            chmHlp->Initialize(utfCvrtTo<wxString>(zen::getResourceDir()) + L"FreeFileSync.chm");
+        }
+
         if (section.empty())
             chmHlp->DisplayContents();
         else
@@ -74,29 +80,17 @@ private:
     FfsHelpController() {}
     ~FfsHelpController() { assert(!chmHlp); }
 
-    void init() //don't put in constructor: not needed if only uninitialize() is ever called!
-    {
-        if (!chmHlp)
-        {
-            chmHlp = std::make_unique<wxCHMHelpController>();
-            chmHlp->Initialize(utfCvrtTo<wxString>(zen::getResourceDir()) + L"FreeFileSync.chm");
-        }
-    }
-
     std::unique_ptr<wxCHMHelpController> chmHlp;
 };
 
 #elif defined ZEN_LINUX || defined ZEN_MAC
-class FfsHelpController
+struct FfsHelpController
 {
-public:
-    static FfsHelpController& getInstance()
+    static FfsHelpController& instance()
     {
         static FfsHelpController inst;
         return inst;
     }
-
-    void uninitialize() {}
 
     void openSection(const wxString& section, wxWindow* parent)
     {
@@ -107,6 +101,7 @@ public:
         //-> Suse Linux: avoids program hang on exit if user closed help parent dialog before the help dialog itself was closed (why is this even possible???)
         //               avoids ESC key not being recognized by help dialog (but by parent dialog instead)
     }
+    void uninitialize() {}
 };
 #endif
 }
@@ -115,20 +110,20 @@ public:
 inline
 void displayHelpEntry(const wxString& topic, wxWindow* parent)
 {
-    impl::FfsHelpController::getInstance().openSection(L"html/" + topic + L".html", parent);
+    impl::FfsHelpController::instance().openSection(L"html/" + topic + L".html", parent);
 }
 
 
 inline
 void displayHelpEntry(wxWindow* parent)
 {
-    impl::FfsHelpController::getInstance().openSection(wxString(), parent);
+    impl::FfsHelpController::instance().openSection(wxString(), parent);
 }
 
 inline
 void uninitializeHelp()
 {
-    impl::FfsHelpController::getInstance().uninitialize();
+    impl::FfsHelpController::instance().uninitialize();
 
 }
 }

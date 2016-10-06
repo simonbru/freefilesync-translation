@@ -71,7 +71,8 @@ void MainDialog::create(const Zstring& cfgFile)
 
 
 MainDialog::MainDialog(wxDialog* dlg, const Zstring& cfgFileName)
-    : MainDlgGenerated(dlg)
+    : MainDlgGenerated(dlg),
+      lastRunConfigPath(zen::getConfigDir() + Zstr("LastRun.ffs_real"))
 {
 #ifdef ZEN_WIN
     new MouseMoveWindow(*this); //ownership passed to "this"
@@ -98,9 +99,9 @@ MainDialog::MainDialog(wxDialog* dlg, const Zstring& cfgFileName)
     //--------------------------- load config values ------------------------------------
     xmlAccess::XmlRealConfig newConfig;
 
-    const Zstring currentConfigFile = cfgFileName.empty() ? lastConfigFileName() : cfgFileName;
+    const Zstring currentConfigFile = cfgFileName.empty() ? lastRunConfigPath : cfgFileName;
     bool loadCfgSuccess = false;
-    if (!cfgFileName.empty() || fileExists(lastConfigFileName()))
+    if (!cfgFileName.empty() || fileExists(lastRunConfigPath))
         try
         {
             std::wstring warningMsg;
@@ -159,7 +160,7 @@ MainDialog::~MainDialog()
 
     try //write config to XML
     {
-        writeConfig(currentCfg, lastConfigFileName()); //throw FileError
+        writeConfig(currentCfg, lastRunConfigPath); //throw FileError
     }
     catch (const FileError& e)
     {
@@ -170,15 +171,8 @@ MainDialog::~MainDialog()
 
 void MainDialog::onQueryEndSession()
 {
-    try { writeConfig(getConfiguration(), lastConfigFileName()); } //throw FileError
+    try { writeConfig(getConfiguration(), lastRunConfigPath); } //throw FileError
     catch (const FileError&) {} //we try our best do to something useful in this extreme situation - no reason to notify or even log errors here!
-}
-
-
-const Zstring& MainDialog::lastConfigFileName()
-{
-    static Zstring instance = zen::getConfigDir() + Zstr("LastRun.ffs_real");
-    return instance;
 }
 
 
@@ -311,7 +305,7 @@ void MainDialog::loadConfig(const Zstring& filepath)
 void MainDialog::setLastUsedConfig(const Zstring& filepath)
 {
     //set title
-    if (filepath == lastConfigFileName())
+    if (filepath == lastRunConfigPath)
     {
         SetTitle(L"RealTimeSync - " + _("Automated Synchronization"));
         currentConfigFileName.clear();

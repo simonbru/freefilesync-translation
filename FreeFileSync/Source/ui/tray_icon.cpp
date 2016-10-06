@@ -49,21 +49,41 @@ void fillRange(wxImage& img, int pixelFirst, int pixelLast, const wxColor& col) 
     }
 }
 
+//------------------------------------------------------------------------------------------------
 
-wxIcon generateProgressIcon(const wxImage& logo, double fraction) //generate icon with progress indicator
+enum Selection
 {
-    if (!logo.IsOk() || logo.GetWidth() <= 0 || logo.GetHeight() <= 0)
+    CONTEXT_RESTORE = 1 //wxWidgets: "A MenuItem ID of zero does not work under Mac"
+};
+}
+
+
+//generate icon with progress indicator
+class FfsTrayIcon::ProgressIconGenerator
+{
+public:
+    ProgressIconGenerator(const wxImage& logo) : logo_(logo) {}
+
+     wxIcon get(double fraction);
+
+private:
+    const wxImage logo_;
+    wxIcon iconBuf_;
+    int startPixBuf_ = -1;
+};
+
+
+wxIcon FfsTrayIcon::ProgressIconGenerator::get(double fraction)
+{
+    if (!logo_.IsOk() || logo_.GetWidth() <= 0 || logo_.GetHeight() <= 0)
         return wxIcon();
 
-    const int pixelCount = logo.GetWidth() * logo.GetHeight();
+    const int pixelCount = logo_.GetWidth() * logo_.GetHeight();
     const int startFillPixel = numeric::clampCpy(numeric::round(fraction * pixelCount), 0, pixelCount);
 
-    //minor optimization
-    static std::pair<int, wxIcon> buffer = std::make_pair(-1, wxNullIcon);
-
-    if (buffer.first != startFillPixel)
+    if (startPixBuf_ != startFillPixel)
     {
-        wxImage genImage(logo.Copy()); //workaround wxWidgets' screwed-up design from hell: their copy-construction implements reference-counting WITHOUT copy-on-write!
+        wxImage genImage(logo_.Copy()); //workaround wxWidgets' screwed-up design from hell: their copy-construction implements reference-counting WITHOUT copy-on-write!
 
         //gradually make FFS icon brighter while nearing completion
         zen::brighten(genImage, -200 * (1 - fraction));
@@ -72,10 +92,10 @@ wxIcon generateProgressIcon(const wxImage& logo, double fraction) //generate ico
         if (startFillPixel <= pixelCount - genImage.GetWidth())
         {
             /*
-                    --------
-                    ---bbbbb
-                    bbbbSyyy  S : start yellow remainder
-                    yyyyyyyy
+                --------
+                ---bbbbb
+                bbbbSyyy  S : start yellow remainder
+                yyyyyyyy
             */
             int bStart = startFillPixel - genImage.GetWidth();
             if (bStart % genImage.GetWidth() != 0) //add one more black pixel, see ascii-art
@@ -86,10 +106,10 @@ wxIcon generateProgressIcon(const wxImage& logo, double fraction) //generate ico
         {
             //special handling for last row
             /*
-                    --------
-                    --------
-                    ---bbbbb
-                    ---bSyyy  S : start yellow remainder
+                --------
+                --------
+                ---bbbbb
+                ---bSyyy  S : start yellow remainder
             */
             int bStart = startFillPixel - genImage.GetWidth() - 1;
             int bEnd = (bStart / genImage.GetWidth() + 1) * genImage.GetWidth();
@@ -101,18 +121,11 @@ wxIcon generateProgressIcon(const wxImage& logo, double fraction) //generate ico
         //fill yellow remainder
         fillRange(genImage, startFillPixel, pixelCount, wxColor(240, 200, 0));
 
-        buffer.second.CopyFromBitmap(wxBitmap(genImage));
+        iconBuf_.CopyFromBitmap(wxBitmap(genImage));
+        startPixBuf_ = startFillPixel;
     }
 
-    return buffer.second;
-}
-
-//------------------------------------------------------------------------------------------------
-
-enum Selection
-{
-    CONTEXT_RESTORE = 1 //wxWidgets: "A MenuItem ID of zero does not work under Mac"
-};
+    return iconBuf_;
 }
 
 
@@ -187,14 +200,13 @@ private:
 
 FfsTrayIcon::FfsTrayIcon(const std::function<void()>& onRequestResume) :
     trayIcon(new TaskBarImpl(onRequestResume)),
-    activeFraction(1), //show FFS logo by default
 #if defined ZEN_WIN || defined ZEN_MAC //16x16 seems to be the only size that is shown correctly on OS X
-    logo(getResourceImage(L"FFS_tray_16x16").ConvertToImage())
+    iconGenerator(std::make_unique<ProgressIconGenerator>(getResourceImage(L"FFS_tray_16x16").ConvertToImage()))
 #elif defined ZEN_LINUX
-    logo(getResourceImage(L"FFS_tray_24x24").ConvertToImage())
+    iconGenerator(std::make_unique<ProgressIconGenerator>(getResourceImage(L"FFS_tray_24x24").ConvertToImage()))
 #endif
 {
-    trayIcon->SetIcon(generateProgressIcon(logo, activeFraction), L"FreeFileSync");
+    trayIcon->SetIcon(iconGenerator->get(activeFraction), activeToolTip);
 }
 
 
@@ -223,12 +235,12 @@ FfsTrayIcon::~FfsTrayIcon()
 void FfsTrayIcon::setToolTip(const wxString& toolTip)
 {
     activeToolTip = toolTip;
-    trayIcon->SetIcon(generateProgressIcon(logo, activeFraction), activeToolTip); //another wxWidgets design bug: non-orthogonal method!
+    trayIcon->SetIcon(iconGenerator->get(activeFraction), activeToolTip); //another wxWidgets design bug: non-orthogonal method!
 }
 
 
 void FfsTrayIcon::setProgress(double fraction)
 {
     activeFraction = fraction;
-    trayIcon->SetIcon(generateProgressIcon(logo, activeFraction), activeToolTip);
+    trayIcon->SetIcon(iconGenerator->get(activeFraction), activeToolTip);
 }

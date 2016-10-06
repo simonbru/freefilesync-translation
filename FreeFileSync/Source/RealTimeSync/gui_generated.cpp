@@ -192,7 +192,7 @@ MainDlgGenerated::MainDlgGenerated( wxWindow* parent, wxWindowID id, const wxStr
     bSizer14->Add( m_spinCtrlDelay, 0, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL|wxALL, 5 );
 
 
-    bSizer1->Add( bSizer14, 0, wxALIGN_RIGHT|wxEXPAND|wxALL, 5 );
+    bSizer1->Add( bSizer14, 0, wxALL|wxEXPAND, 5 );
 
     m_staticline211 = new wxStaticLine( m_panelMain, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLI_HORIZONTAL );
     bSizer1->Add( m_staticline211, 0, wxEXPAND, 5 );

@@ -229,12 +229,11 @@ template <class S, class T> inline
 std::vector<S> split(const S& str, const T& delimiter)
 {
     static_assert(IsSameType<typename GetCharType<S>::Type, typename GetCharType<T>::Type>::value, "");
-    std::vector<S> output;
 
     const size_t delimLen = strLength(delimiter);
 
     if (delimLen == 0)
-        output.push_back(str);
+		return { str };
     else
     {
         const auto* const delimFirst = strBegin(delimiter);
@@ -242,6 +241,8 @@ std::vector<S> split(const S& str, const T& delimiter)
 
         const auto* blockStart    = strBegin(str);
         const auto* const strLast = blockStart + strLength(str);
+    
+		std::vector<S> output;
 
         for (;;)
         {
@@ -249,12 +250,11 @@ std::vector<S> split(const S& str, const T& delimiter)
                                                      delimFirst, delimLast);
 
             output.emplace_back(blockStart, blockEnd - blockStart);
-            if (blockEnd == strLast)
-                break;
+            if (blockEnd == strLast) //clients expect: if delimiter not found, return str
+				return output;
             blockStart = blockEnd + delimLen;
         }
     }
-    return output;
 }
 
 

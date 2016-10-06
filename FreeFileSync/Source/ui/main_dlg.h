@@ -82,8 +82,6 @@ private:
     bool trySaveBatchConfig(const Zstring* batchFileToUpdate); //
     bool saveOldConfig(); //return false on user abort
 
-    static const Zstring& lastRunConfigName();
-
     void updateGlobalFilterButton();
 
     void initViewFilterButtons();
@@ -295,6 +293,9 @@ private:
     std::vector<Zstring> activeConfigFiles; //name of currently loaded config file (may be more than 1)
 
     xmlAccess::XmlGuiConfig lastConfigurationSaved; //support for: "Save changed configuration?" dialog
+
+    static Zstring getLastRunConfigPath();
+    const Zstring lastRunConfigPath; //let's not use another static...
     //-------------------------------------
 
     //UI view of FolderComparison structure (partially owns folderCmp)

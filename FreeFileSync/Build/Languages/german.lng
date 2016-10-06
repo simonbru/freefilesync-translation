@@ -273,6 +273,12 @@ Tatsächlich: %y bytes
 <source>Cannot move file %x to %y.</source>
 <target>Die Datei %x kann nicht nach %y verschoben werden.</target>
 
+<source>Unable to connect to %x.</source>
+<target>Es kann keine Verbindung zu %x aufgebaut werden.</target>
+
+<source>Cannot open directory %x.</source>
+<target>Das Verzeichnis %x kann nicht geöffnet werden.</target>
+
 <source>Cannot enumerate directory %x.</source>
 <target>Das Verzeichnis %x kann nicht gelistet werden.</target>
 
@@ -309,9 +315,6 @@ Tatsächlich: %y bytes
 <source>Cannot resolve symbolic link %x.</source>
 <target>Die symbolische Verknüpfung %x kann nicht aufgelöst werden.</target>
 
-<source>Cannot open directory %x.</source>
-<target>Das Verzeichnis %x kann nicht geöffnet werden.</target>
-
 <source>Cannot determine free disk space for %x.</source>
 <target>Der freie Speicherplatz für %x konnte nicht ermittelt werden.</target>
 
@@ -321,11 +324,32 @@ Tatsächlich: %y bytes
 <source>Incorrect command line:</source>
 <target>Ungültige Befehlszeile:</target>
 
-<source>Error Code %x:</source>
-<target>Fehlercode %x:</target>
+<source>Unable to access %x.</source>
+<target>Auf %x kann nicht zugegriffen werden.</target>
 
-<source>Unable to connect to %x.</source>
-<target>Es kann keine Verbindung zu %x aufgebaut werden.</target>
+<source>
+<pluralform>Operation timed out after 1 second.</pluralform>
+<pluralform>Operation timed out after %x seconds.</pluralform>
+</source>
+<target>
+<pluralform>Der Vorgang hat das Zeitlimit von 1 Sekunde überschritten.</pluralform>
+<pluralform>Der Vorgang hat das Zeitlimit von %x Sekunden überschritten.</pluralform>
+</target>
+
+<source>
+<pluralform>Cannot wait on more than 1 connection at a time.</pluralform>
+<pluralform>Cannot wait on more than %x connections at a time.</pluralform>
+</source>
+<target>
+<pluralform>Auf mehr als 1 Verbindung kann nicht gleichzeitig gewartet werden.</pluralform>
+<pluralform>Auf mehr als %x Verbindungen kann nicht gleichzeitig gewartet werden.</pluralform>
+</target>
+
+<source>Active connections: %x</source>
+<target>Aktive Verbindungen: %x</target>
+
+<source>Failed to open SFTP channel number %x.</source>
+<target>Der SFTP Kanal Nummer %x konnte nicht geöffnet werden.</target>
 
 <source>
 <pluralform>1 byte</pluralform>
@@ -448,7 +472,7 @@ Tatsächlich: %y bytes
 <target>Laufwerksname %x ist kein Teil des Dateipfades %y.</target>
 
 <source>Stop requested: Waiting for current operation to finish...</source>
-<target>Unterbrechung wurde eingeleitet: Warte bis die aktuelle Operation beendet ist...</target>
+<target>Unterbrechung wurde eingeleitet: Warte bis der aktuelle Vorgang beendet ist...</target>
 
 <source>Unable to create time stamp for versioning:</source>
 <target>Der Zeitstempel für die Versionierung kann nicht erstellt werden:</target>
@@ -717,7 +741,7 @@ Die Befehlszeile wird ausgelöst, wenn:
 <target>&Nachfolgende Fehler ignorieren</target>
 
 <source>Retrying operation...</source>
-<target>Wiederhole Operation...</target>
+<target>Wiederhole Vorgang...</target>
 
 <source>Serious Error</source>
 <target>Schwerer Fehler</target>
@@ -1056,6 +1080,27 @@ Die Befehlszeile wird ausgelöst, wenn:
 
 <source>Directory on server:</source>
 <target>Verzeichnis auf Server:</target>
+
+<source>Performance settings:</source>
+<target>Leistungseinstellungen:</target>
+
+<source>How to get best performance?</source>
+<target>Wie erreicht man die beste Leistung?</target>
+
+<source>SSH connections for directory reading:</source>
+<target>SSH Verbindungen zum Lesen des Verzeichnisses:</target>
+
+<source>Suggested range: [1 - 10]</source>
+<target>Empfohlener Bereich: [1 - 10]</target>
+
+<source>SFTP channels per connection:</source>
+<target>SFTP Kanäle je Verbindung:</target>
+
+<source>Detect server limit</source>
+<target>Ermittle Serverlimit</target>
+
+<source>2 connections x 10 channels = 20 times faster directory reading</source>
+<target>2 Verbindungen x 10 Kanäle = 20 mal schnelleres Lesen des Verzeichnisses</target>
 
 <source>Select a directory on the server:</source>
 <target>Verzeichnis auf dem Server auswählen:</target>
@@ -1740,6 +1785,9 @@ Dadurch wird ein konsistenter Datenstand auch bei schweren Fehlern garantiert.
 
 <source>Cannot change process I/O priorities.</source>
 <target>Die Eingabe/Ausgabe Prioritäten für den Prozess können nicht geändert werden.</target>
+
+<source>Error Code %x:</source>
+<target>Fehlercode %x:</target>
 
 <source>Checking recycle bin failed for folder %x.</source>
 <target>Die Prüfung des Papierkorbs für Ordner %x ist fehlgeschlagen.</target>

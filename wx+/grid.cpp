@@ -7,12 +7,13 @@
 #include "grid.h"
 #include <cassert>
 #include <set>
+#include <chrono>
 #include <wx/settings.h>
 #include <wx/listbox.h>
 #include <wx/tooltip.h>
 #include <wx/timer.h>
 #include <wx/utils.h>
-#include <zen/tick_count.h>
+//#include <zen/tick_count.h>
 #include <zen/string_tools.h>
 #include <zen/scope_guard.h>
 #include <zen/utf.h>
@@ -100,7 +101,7 @@ int GridData::getBestSize(wxDC& dc, size_t row, ColumnType colType)
 
 wxRect GridData::drawCellBorder(wxDC& dc, const wxRect& rect) //returns remaining rectangle
 {
-    wxDCPenChanger dummy2(dc, wxPen(getColorGridLine(), 1, wxSOLID));
+    wxDCPenChanger dummy2(dc, getColorGridLine());
     dc.DrawLine(rect.GetBottomLeft(),  rect.GetBottomRight());
     dc.DrawLine(rect.GetBottomRight(), rect.GetTopRight() + wxPoint(0, -1));
 
@@ -212,7 +213,7 @@ wxRect GridData::drawColumnLabelBorder(wxDC& dc, const wxRect& rect) //returns r
 
     //draw border (with gradient)
     {
-        wxDCPenChanger dummy(dc, wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_3DSHADOW), 1, wxSOLID));
+        wxDCPenChanger dummy(dc, wxSystemSettings::GetColour(wxSYS_COLOUR_3DSHADOW));
         dc.GradientFillLinear(wxRect(rect.GetTopRight(), rect.GetBottomRight()), getColorLabelGradientFrom(), dc.GetPen().GetColour(), wxSOUTH);
         dc.DrawLine(rect.GetBottomLeft(), rect.GetBottomRight() + wxPoint(1, 0));
     }
@@ -397,7 +398,7 @@ private:
 
         dc.GradientFillLinear(clientRect, getColorLabelGradientFrom(), getColorLabelGradientTo(), wxSOUTH);
 
-        dc.SetPen(wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_3DSHADOW), 1, wxSOLID));
+        dc.SetPen(wxSystemSettings::GetColour(wxSYS_COLOUR_3DSHADOW));
 
         {
             wxDCPenChanger dummy(dc, getColorLabelGradientFrom());
@@ -540,7 +541,7 @@ private:
             dc.DrawLine(rect.GetTopLeft(), rect.GetTopRight());
         }
         {
-            wxDCPenChanger dummy(dc, wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_3DSHADOW), 1, wxSOLID));
+            wxDCPenChanger dummy(dc, wxSystemSettings::GetColour(wxSYS_COLOUR_3DSHADOW));
             dc.DrawLine(rect.GetTopLeft(),     rect.GetBottomLeft());
             dc.DrawLine(rect.GetBottomLeft(),  rect.GetBottomRight());
             dc.DrawLine(rect.GetBottomRight(), rect.GetTopRight() + wxPoint(0, -1));
@@ -633,7 +634,7 @@ private:
 
         wxDCTextColourChanger dummy(dc, wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT)); //use user setting for labels
 
-        const int colLabelHeight = refParent().colLabelHeight;
+        const int colLabelHeight = refParent().colLabelHeight_;
 
         wxPoint labelAreaTL(refParent().CalcScrolledPosition(wxPoint(0, 0)).x, 0); //client coordinates
 
@@ -1150,13 +1151,9 @@ private:
 
         void evalMousePos()
         {
-            double deltaTime = 0;
-            if (ticksPerSec_ > 0)
-            {
-                const TickVal now = getTicks(); //!isValid() on error
-                deltaTime = static_cast<double>(dist(tickCountLast, now)) / ticksPerSec_; //unit: [sec]
-                tickCountLast = now;
-            }
+                const auto now = std::chrono::steady_clock::now();				   
+				const double deltaSecs = std::chrono::duration<double>(now - lastEvalTime).count(); //unit: [sec]
+                lastEvalTime = now;
 
             const wxPoint clientPos = wnd_.ScreenToClient(wxGetMousePosition());
             const wxSize clientSize = wnd_.GetClientSize();
@@ -1179,7 +1176,7 @@ private:
                 if (overlapPix != 0)
                 {
                     const double scrollSpeed = overlapPix * mouseDragSpeedIncScrollU; //unit: [scroll units / sec]
-                    toScroll += scrollSpeed * deltaTime;
+                    toScroll += scrollSpeed * deltaSecs;
                 }
                 else
                     toScroll = 0;
@@ -1220,8 +1217,7 @@ private:
         wxTimer timer;
         double toScrollX = 0; //count outstanding scroll unit fractions while dragging mouse
         double toScrollY = 0; //
-        TickVal tickCountLast = getTicks();
-        const std::int64_t ticksPerSec_ = ticksPerSec();
+        std::chrono::steady_clock::time_point lastEvalTime = std::chrono::steady_clock::now();
     };
 
     struct MouseHighlight
@@ -1243,7 +1239,7 @@ private:
         //=> don't use plain async event => severe performance issues on wxGTK!
         //=> can't use idle event neither: too few idle events on Windows, e.g. NO idle events while mouse drag-scrolling!
         //=> solution: send single async event at most!
-        if (!gridUpdatePending) //without guarding, the number of outstanding async events can get very high during scrolling!! test case: Ubuntu: 170; Windows: 20
+        if (!gridUpdatePending) //without guarding, the number of outstanding async events can become very high during scrolling!! test case: Ubuntu: 170; Windows: 20
         {
             gridUpdatePending = true;
             wxCommandEvent scrollEvent(EVENT_GRID_HAS_SCROLLED);
@@ -1301,7 +1297,7 @@ Grid::Grid(wxWindow* parent,
     colLabelWin_ = new ColLabelWin(*this); //
     mainWin_     = new MainWin    (*this, *rowLabelWin_, *colLabelWin_); //
 
-    colLabelHeight = 2 * DEFAULT_COL_LABEL_BORDER + [&]() -> int
+    colLabelHeight_ = 2 * DEFAULT_COL_LABEL_BORDER + [&]() -> int
     {
         //coordinate with ColLabelWin::render():
         wxFont labelFont = colLabelWin_->GetFont();
@@ -1353,7 +1349,7 @@ void Grid::updateWindowSizes(bool updateScrollbar)
     //harmonize with Grid::GetSizeAvailableForScrollTarget()!
 
     //1. calculate row label width independent from scrollbars
-    const int mainWinHeightGross = std::max(GetSize().GetHeight() - colLabelHeight, 0); //independent from client sizes and scrollbars!
+    const int mainWinHeightGross = std::max(GetSize().GetHeight() - colLabelHeight_, 0); //independent from client sizes and scrollbars!
     const ptrdiff_t logicalHeight = rowLabelWin_->getLogicalHeight();                   //
 
     int rowLabelWidth = 0;
@@ -1370,7 +1366,7 @@ void Grid::updateWindowSizes(bool updateScrollbar)
             rowLabelWidth = rowLabelWin_->getBestWidth(rowFrom, rowTo);
     }
 
-    auto getMainWinSize = [&](const wxSize& clientSize) { return wxSize(std::max(0, clientSize.GetWidth() - rowLabelWidth), std::max(0, clientSize.GetHeight() - colLabelHeight)); };
+    auto getMainWinSize = [&](const wxSize& clientSize) { return wxSize(std::max(0, clientSize.GetWidth() - rowLabelWidth), std::max(0, clientSize.GetHeight() - colLabelHeight_)); };
 
     auto setScrollbars2 = [&](int logWidth, int logHeight) //replace SetScrollbars, which loses precision of pixelsPerUnitX for some brain-dead reason
     {
@@ -1393,10 +1389,10 @@ void Grid::updateWindowSizes(bool updateScrollbar)
     //this ensures mainWin_->SetVirtualSize() and AdjustScrollbars() are working with the correct main window size, unless sb change later, which triggers a recalculation anyway!
     const wxSize mainWinSize = getMainWinSize(GetClientSize());
 
-    cornerWin_  ->SetSize(0, 0, rowLabelWidth, colLabelHeight);
-    rowLabelWin_->SetSize(0, colLabelHeight, rowLabelWidth, mainWinSize.GetHeight());
-    colLabelWin_->SetSize(rowLabelWidth, 0, mainWinSize.GetWidth(), colLabelHeight);
-    mainWin_    ->SetSize(rowLabelWidth, colLabelHeight, mainWinSize.GetWidth(), mainWinSize.GetHeight());
+    cornerWin_  ->SetSize(0, 0, rowLabelWidth, colLabelHeight_);
+    rowLabelWin_->SetSize(0, colLabelHeight_, rowLabelWidth, mainWinSize.GetHeight());
+    colLabelWin_->SetSize(rowLabelWidth, 0, mainWinSize.GetWidth(), colLabelHeight_);
+    mainWin_    ->SetSize(rowLabelWidth, colLabelHeight_, mainWinSize.GetWidth(), mainWinSize.GetHeight());
 
     //avoid flicker in wxWindowMSW::HandleSize() when calling ::EndDeferWindowPos() where the sub-windows are moved only although they need to be redrawn!
     colLabelWin_->Refresh();
@@ -1461,7 +1457,7 @@ wxSize Grid::GetSizeAvailableForScrollTarget(const wxSize& size)
     //harmonize with Grid::updateWindowSizes()!
 
     //1. calculate row label width independent from scrollbars
-    const int mainWinHeightGross = std::max(size.GetHeight() - colLabelHeight, 0); //independent from client sizes and scrollbars!
+    const int mainWinHeightGross = std::max(size.GetHeight() - colLabelHeight_, 0); //independent from client sizes and scrollbars!
     const ptrdiff_t logicalHeight = rowLabelWin_->getLogicalHeight();              //
 
     int rowLabelWidth = 0;
@@ -1478,7 +1474,7 @@ wxSize Grid::GetSizeAvailableForScrollTarget(const wxSize& size)
             rowLabelWidth = rowLabelWin_->getBestWidth(rowFrom, rowTo);
     }
 
-    return size - wxSize(rowLabelWidth, colLabelHeight);
+    return size - wxSize(rowLabelWidth, colLabelHeight_);
 }
 
 
@@ -1621,7 +1617,7 @@ void Grid::onKeyDown(wxKeyEvent& event)
 
 void Grid::setColumnLabelHeight(int height)
 {
-    colLabelHeight = std::max(0, height);
+    colLabelHeight_ = std::max(0, height);
     updateWindowSizes();
 }
 
@@ -1955,7 +1951,7 @@ wxRect Grid::getColumnLabelArea(ColumnType colType) const
         for (auto it = absWidths.begin(); it != itCol; ++it)
             posX += it->width_;
 
-        return wxRect(wxPoint(posX, 0), wxSize(itCol->width_, colLabelHeight));
+        return wxRect(wxPoint(posX, 0), wxSize(itCol->width_, colLabelHeight_));
     }
     return wxRect();
 }

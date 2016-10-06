@@ -292,7 +292,7 @@ protected:
                 if (dispTp != DisplayType::NORMAL &&
                     dispTp == getRowDisplayType(row + 1))
                 {
-                    wxDCPenChanger dummy2(dc, wxPen(getColorGridLine(), 1, wxSOLID));
+                    wxDCPenChanger dummy2(dc, getColorGridLine());
                     dc.DrawLine(rect.GetBottomLeft(),  rect.GetBottomRight() + wxPoint(1, 0));
                 }
             }

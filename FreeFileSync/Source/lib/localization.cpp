@@ -162,26 +162,26 @@ std::vector<TranslationInfo> loadTranslations()
         TranslationInfo newEntry;
         newEntry.languageID     = wxLANGUAGE_ENGLISH_US;
         newEntry.languageName   = L"English (US)";
-        newEntry.languageFile   = L"";
         newEntry.translatorName = L"Zenju";
         newEntry.languageFlag   = L"flag_usa.png";
+        newEntry.langFilePath   = Zstr("");
         locMapping.push_back(newEntry);
     }
 
     //search language files available
-    std::vector<Zstring> lngFiles;
+    std::vector<Zstring> lngFilePaths;
 
     traverseFolder(zen::getResourceDir() + Zstr("Languages"), [&](const zen::FileInfo& fi) //FileInfo is ambiguous on OS X
     {
         if (pathEndsWith(fi.fullPath, Zstr(".lng")))
-            lngFiles.push_back(fi.fullPath);
+            lngFilePaths.push_back(fi.fullPath);
     }, nullptr, nullptr, [&](const std::wstring& errorMsg) { assert(false); }); //errors are not really critical in this context
 
-    for (const Zstring& filepath : lngFiles)
+    for (const Zstring& filePath : lngFilePaths)
     {
         try
         {
-            const std::string stream = loadBinContainer<std::string>(filepath,  nullptr); //throw FileError
+            const std::string stream = loadBinContainer<std::string>(filePath,  nullptr); //throw FileError
 
             lngfile::TransHeader lngHeader;
             lngfile::parseHeader(stream, lngHeader); //throw ParsingError
@@ -203,9 +203,9 @@ std::vector<TranslationInfo> loadTranslations()
                 TranslationInfo newEntry;
                 newEntry.languageID     = static_cast<wxLanguage>(locInfo->Language);
                 newEntry.languageName   = utfCvrtTo<std::wstring>(lngHeader.languageName);
-                newEntry.languageFile   = utfCvrtTo<std::wstring>(filepath);
                 newEntry.translatorName = utfCvrtTo<std::wstring>(lngHeader.translatorName);
                 newEntry.languageFlag   = utfCvrtTo<std::wstring>(lngHeader.flagFile);
+                newEntry.langFilePath   = filePath;
                 locMapping.push_back(newEntry);
             }
             else assert(false);
@@ -401,7 +401,7 @@ public:
         locLng = lng;
     }
 
-    void release() { locale.reset(); locLng = wxLANGUAGE_UNKNOWN; }
+    void tearDown() { locale.reset(); locLng = wxLANGUAGE_UNKNOWN; }
 
     wxLanguage getLanguage() const { return locLng; }
 
@@ -425,8 +425,8 @@ const std::vector<TranslationInfo>& zen::getExistingTranslations()
 
 void zen::releaseWxLocale()
 {
-    wxWidgetsLocale::getInstance().release();
-    zen::setTranslator(nullptr); //good place for clean up rather than some time during static destruction: is there an actual benefit???
+    wxWidgetsLocale::getInstance().tearDown();
+    zen::setTranslator(nullptr); //good place for clean up rather than some time during static destruction: is this an actual benefit???
 }
 
 
@@ -436,38 +436,38 @@ void zen::setLanguage(wxLanguage lng) //throw FileError
         return; //support polling
 
     //(try to) retrieve language file
-    std::wstring languageFile;
+    Zstring langFilePath;
 
     for (const TranslationInfo& e : getExistingTranslations())
         if (e.languageID == lng)
         {
-            languageFile = e.languageFile;
+            langFilePath = e.langFilePath;
             break;
         }
 
     //load language file into buffer
-    if (languageFile.empty()) //if languageFile is empty, texts will be english by default
+    if (langFilePath.empty()) //if languageFile is empty, texts will be english by default
         zen::setTranslator(nullptr);
     else
         try
         {
-            zen::setTranslator(std::make_unique<FFSTranslation>(utfCvrtTo<Zstring>(languageFile), lng)); //throw lngfile::ParsingError, parse_plural::ParsingError
+            zen::setTranslator(std::make_unique<FFSTranslation>(langFilePath, lng)); //throw lngfile::ParsingError, parse_plural::ParsingError
         }
         catch (lngfile::ParsingError& e)
         {
             throw FileError(replaceCpy(replaceCpy(replaceCpy(_("Error parsing file %x, row %y, column %z."),
-                                                             L"%x", fmtPath(utfCvrtTo<Zstring>(languageFile))),
+                                                             L"%x", fmtPath(langFilePath)),
                                                   L"%y", numberTo<std::wstring>(e.row_ + 1)),
                                        L"%z", numberTo<std::wstring>(e.col_ + 1))
                             + L"\n\n" + e.msg_);
         }
         catch (parse_plural::ParsingError&)
         {
-            throw FileError(L"Invalid plural form definition"); //user should never see this!
+            throw FileError(replaceCpy<std::wstring>(L"%x: Invalid plural form definition", L"%x", fmtPath(langFilePath))); //user should never see this!
         }
 
     //handle RTL swapping: we need wxWidgets to do this
-    wxWidgetsLocale::getInstance().init(languageFile.empty() ? wxLANGUAGE_ENGLISH : lng);
+    wxWidgetsLocale::getInstance().init(langFilePath.empty() ? wxLANGUAGE_ENGLISH : lng);
 }
 
 

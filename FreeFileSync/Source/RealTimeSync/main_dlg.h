@@ -58,11 +58,11 @@ private:
     void removeAddFolder(size_t pos);
     void clearAddFolders();
 
-    static const Zstring& lastConfigFileName();
-
     std::unique_ptr<zen::FolderSelector2> dirpathFirst;
     std::vector<DirectoryPanel*> dirpathsExtra; //additional pairs to the standard pair
 
+
+    const Zstring lastRunConfigPath;
     Zstring currentConfigFileName;
 
     zen::AsyncGuiQueue guiQueue; //schedule and run long-running tasks asynchronously, but process results on GUI queue

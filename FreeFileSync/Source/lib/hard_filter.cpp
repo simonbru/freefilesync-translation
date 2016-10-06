@@ -26,11 +26,17 @@ bool zen::operator<(const HardFilter& lhs, const HardFilter& rhs)
 
 namespace
 {
-//constructing these in addFilterEntry becomes perf issue for large filter lists:
-const Zstring asterisk            = Zstr("*");
-const Zstring sepAsterisk         = FILE_NAME_SEPARATOR + asterisk;
-const Zstring asteriskSep         = asterisk + FILE_NAME_SEPARATOR;
-const Zstring asteriskSepAsterisk = asteriskSep + asterisk;
+//constructing Zstrings of these in addFilterEntry becomes perf issue for large filter lists => use global POD!
+#ifdef ZEN_WIN
+const Zchar sepAsterisk[] = Zstr("\\*");
+const Zchar asteriskSep[] = Zstr("*\\");
+static_assert(FILE_NAME_SEPARATOR == '\\', "");
+
+#elif defined ZEN_LINUX || defined ZEN_MAC
+const Zchar sepAsterisk[] = Zstr("/*");
+const Zchar asteriskSep[] = Zstr("*/");
+static_assert(FILE_NAME_SEPARATOR == '/', "");
+#endif
 
 
 void addFilterEntry(const Zstring& filterPhrase, std::vector<Zstring>& masksFileFolder, std::vector<Zstring>& masksFolder)
@@ -341,9 +347,19 @@ bool NameFilter::isNull(const Zstring& includePhrase, const Zstring& excludePhra
 
 bool NameFilter::isNull() const
 {
-    static NameFilter nullInstance(Zstr("*"), Zstring());
-    return *this == nullInstance;
+    return includeMasksFileFolder.size() == 1 && includeMasksFileFolder[0] == Zstr("*") &&
+           includeMasksFolder    .empty() &&
+           excludeMasksFileFolder.empty() &&
+           excludeMasksFolder    .empty();
+    //avoid static non-POD null-NameFilter instance; instead test manually and verify function on startup:
 }
+
+#ifndef NDEBUG
+struct OnStartup
+{
+    OnStartup() { assert(NameFilter(Zstr("*"), Zstring()).isNull()); }
+} startupCheckIsNullNameFilter;
+#endif
 
 
 bool NameFilter::cmpLessSameType(const HardFilter& other) const

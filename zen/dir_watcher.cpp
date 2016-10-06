@@ -344,9 +344,9 @@ DirWatcher::~DirWatcher()
     if (pimpl_->worker.joinable()) //= thread::detach() precondition! -> may already be joined by HandleVolumeRemoval::onRequestRemoval()
     {
         pimpl_->worker.interrupt();
-        pimpl_->worker.detach(); //we don't have time to wait... will take ~50ms anyway:
+        pimpl_->worker.detach(); //we don't have time to wait... would take ~50ms
+    //Windows caveat: exitting the app will kill the thread and leak memory!
     }
-    //caveat: exitting the app may simply kill this thread!
 }
 
 

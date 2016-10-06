@@ -10,7 +10,7 @@
 #include <vector>
 #include <zen/zstring.h>
 #ifdef ZEN_WIN
-#include <zen/win.h> //include before <wx/msw/wrapwin.h>
+    #include <zen/win.h> //include before <wx/msw/wrapwin.h>
 #endif
 #include <wx/app.h>
 #include "lib/return_codes.h"

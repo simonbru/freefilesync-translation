@@ -12,6 +12,11 @@
 using namespace zen;
 
 
+#ifndef NDEBUG
+    const std::thread::id ObjectMgr<FileSystemObject>::mainThreadId = std::this_thread::get_id();
+#endif
+
+
 void HierarchyObject::removeEmptyRec()
 {
     bool emptyExisting = false;

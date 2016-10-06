@@ -505,6 +505,19 @@ class SftpSetupDlgGenerated : public wxDialog
 		wxStaticText* m_staticText1232;
 		wxTextCtrl* m_textCtrlServerPath;
 		wxButton* m_buttonSelectFolder;
+		wxStaticLine* m_staticline571;
+		wxStaticText* m_staticText1361;
+		wxHyperlinkCtrl* m_hyperlink171;
+		wxStaticLine* m_staticline57;
+		wxPanel* m_panel411;
+		wxStaticText* m_staticText12341;
+		wxSpinCtrl* m_spinCtrlConnectionCount;
+		wxStaticText* m_staticText138111;
+		wxStaticText* m_staticText1231111;
+		wxSpinCtrl* m_spinCtrlChannelCount;
+		wxButton* m_button42;
+		wxStaticText* m_staticText138112;
+		wxStaticText* m_staticText13811;
 		wxStaticLine* m_staticline12;
 		wxBoxSizer* bSizerStdButtons;
 		wxButton* m_buttonOkay;
@@ -514,6 +527,8 @@ class SftpSetupDlgGenerated : public wxDialog
 		virtual void OnClose( wxCloseEvent& event ) { event.Skip(); }
 		virtual void OnToggleShowPassword( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnBrowseSftpFolder( wxCommandEvent& event ) { event.Skip(); }
+		virtual void OnHelpSftpPerformance( wxHyperlinkEvent& event ) { event.Skip(); }
+		virtual void OnDetectServerChannelLimit( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnOkay( wxCommandEvent& event ) { event.Skip(); }
 		virtual void OnCancel( wxCommandEvent& event ) { event.Skip(); }
 		

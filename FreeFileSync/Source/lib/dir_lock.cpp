@@ -5,16 +5,17 @@
 // *****************************************************************************
 #include "dir_lock.h"
 #include <map>
-#include <wx/log.h>
 #include <memory>
+//#include <chrono>
 #include <zen/sys_error.h>
 #include <zen/thread.h>
 #include <zen/scope_guard.h>
 #include <zen/guid.h>
-#include <zen/tick_count.h>
+//#include <zen/tick_count.h>
 #include <zen/file_access.h>
 #include <zen/file_io.h>
 #include <zen/optional.h>
+#include <wx/log.h>
 
 #ifdef ZEN_WIN
     #include <zen/win_process.h>
@@ -34,7 +35,6 @@
 #endif
 
 using namespace zen;
-using namespace std::rel_ops;
 
 
 namespace
@@ -82,6 +82,7 @@ public:
         }
     }
 
+private:
     void emitLifeSign() const //try to append one byte..., throw()
     {
 #ifdef ZEN_WIN
@@ -131,8 +132,7 @@ public:
 #endif
     }
 
-private:
-    const Zstring lockFilePath_; //thread local! atomic ref-count => binary value-type semantics!
+    const Zstring lockFilePath_; //thread-local!
 };
 
 
@@ -390,11 +390,9 @@ ProcessStatus getProcessStatus(const LockInformation& lockInfo) //throw FileErro
 }
 
 
-const std::int64_t TICKS_PER_SEC = ticksPerSec(); //= 0 on error
-
-
 void waitOnDirLock(const Zstring& lockFilePath, DirLockCallback* callback) //throw FileError
 {
+	using namespace std::chrono;
     std::wstring infoMsg = _("Waiting while directory is locked:") + L' ' + fmtPath(lockFilePath);
 
     if (callback)
@@ -426,15 +424,12 @@ void waitOnDirLock(const Zstring& lockFilePath, DirLockCallback* callback) //thr
         catch (FileError&) {} //logfile may be only partly written -> this is no error!
 
         std::uint64_t fileSizeOld = 0;
-        TickVal lastLifeSign = getTicks();
+        auto lastLifeSign = steady_clock::now();
 
         for (;;)
         {
-            const TickVal now = getTicks();
+            const auto now = steady_clock::now();
             const std::uint64_t fileSizeNew = getFilesize(lockFilePath); //throw FileError
-
-            if (TICKS_PER_SEC <= 0 || !lastLifeSign.isValid() || !now.isValid())
-                throw FileError(L"System timer failed."); //no i18n: "should" never throw ;)
 
             if (fileSizeNew != fileSizeOld) //received life sign from lock
             {
@@ -443,7 +438,7 @@ void waitOnDirLock(const Zstring& lockFilePath, DirLockCallback* callback) //thr
             }
 
             if (lockOwnderDead || //no need to wait any longer...
-                dist(lastLifeSign, now) / TICKS_PER_SEC >= DETECT_ABANDONED_INTERVAL)
+				now >= lastLifeSign + seconds(DETECT_ABANDONED_INTERVAL))
             {
                 DirLock dummy(abandonedLockDeletionName(lockFilePath), callback); //throw FileError
 
@@ -465,14 +460,14 @@ void waitOnDirLock(const Zstring& lockFilePath, DirLockCallback* callback) //thr
             for (size_t i = 0; i < 1000 * POLL_LIFE_SIGN_INTERVAL / GUI_CALLBACK_INTERVAL; ++i)
             {
                 if (callback) callback->requestUiRefresh();
-                std::this_thread::sleep_for(std::chrono::milliseconds(GUI_CALLBACK_INTERVAL));
+                std::this_thread::sleep_for(milliseconds(GUI_CALLBACK_INTERVAL));
 
                 if (callback)
                 {
                     //one signal missed: it's likely this is an abandoned lock => show countdown
-                    if (dist(lastLifeSign, now) / TICKS_PER_SEC > EMIT_LIFE_SIGN_INTERVAL)
+					if (now >= lastLifeSign + seconds(EMIT_LIFE_SIGN_INTERVAL + 1))
                     {
-                        const int remainingSeconds = std::max<int>(0, DETECT_ABANDONED_INTERVAL - dist(lastLifeSign, getTicks()) / TICKS_PER_SEC);
+                        const int remainingSeconds = std::max<int>(0, DETECT_ABANDONED_INTERVAL - duration_cast<seconds>(steady_clock::now() - lastLifeSign).count());
                         const std::wstring remSecMsg = replaceCpy(_P("1 sec", "%x sec", remainingSeconds), L"%x", toGuiString(remainingSeconds));
                         callback->reportStatus(infoMsg + L" | " + _("Detecting abandoned lock...") + L' ' + remSecMsg);
                     }

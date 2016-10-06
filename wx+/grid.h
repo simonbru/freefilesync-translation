@@ -348,7 +348,7 @@ private:
     ScrollBarStatus showScrollbarX = SB_SHOW_AUTOMATIC;
     ScrollBarStatus showScrollbarY = SB_SHOW_AUTOMATIC;
 
-    int colLabelHeight = 0;
+    int colLabelHeight_ = 0;
     bool drawRowLabel = true;
 
     std::shared_ptr<GridData> dataView_;

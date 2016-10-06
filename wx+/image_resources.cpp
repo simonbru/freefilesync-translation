@@ -7,11 +7,13 @@
 #include "image_resources.h"
 #include <memory>
 #include <map>
+#include <zen/utf.h>
+#include <zen/globals.h>
+#include <zen/thread.h>
 #include <wx/wfstream.h>
 #include <wx/zipstrm.h>
 #include <wx/image.h>
 #include <wx/mstream.h>
-#include <zen/utf.h>
 #include "image_tools.h"
 
 using namespace zen;
@@ -19,6 +21,10 @@ using namespace zen;
 
 namespace
 {
+#ifndef NDEBUG
+    const std::thread::id mainThreadId = std::this_thread::get_id();
+#endif
+
 void loadAnimFromZip(wxZipInputStream& zipInput, wxAnimation& anim)
 {
     //work around wxWidgets bug:
@@ -37,17 +43,18 @@ void loadAnimFromZip(wxZipInputStream& zipInput, wxAnimation& anim)
 }
 
 
-class GlobalResources
+class GlobalBitmaps
 {
 public:
-    static GlobalResources& instance()
+    static std::shared_ptr<GlobalBitmaps> instance()
     {
-#if defined _MSC_VER && _MSC_VER < 1900
-#error function scope static initialization is not yet thread-safe!
-#endif
-        static GlobalResources inst;
-        return inst;
+        static Global<GlobalBitmaps> inst(std::make_unique<GlobalBitmaps>());
+		assert(std::this_thread::get_id() == mainThreadId); //wxWidgets is not thread-safe!
+        return inst.get();
     }
+
+    GlobalBitmaps() {}
+    ~GlobalBitmaps() { assert(bitmaps.empty() && anims.empty()); } //don't leave wxWidgets objects for static destruction!
 
     void init(const Zstring& filepath);
     void cleanup()
@@ -60,17 +67,15 @@ public:
     const wxAnimation& getAnimation(const wxString& name) const;
 
 private:
-    GlobalResources() {}
-    ~GlobalResources() { assert(bitmaps.empty() && anims.empty()); } //don't leave wxWidgets objects for static destruction!
-    GlobalResources           (const GlobalResources&) = delete;
-    GlobalResources& operator=(const GlobalResources&) = delete;
+    GlobalBitmaps           (const GlobalBitmaps&) = delete;
+    GlobalBitmaps& operator=(const GlobalBitmaps&) = delete;
 
     std::map<wxString, wxBitmap> bitmaps;
     std::map<wxString, wxAnimation> anims;
 };
 
 
-void GlobalResources::init(const Zstring& filepath)
+void GlobalBitmaps::init(const Zstring& filepath)
 {
     assert(bitmaps.empty() && anims.empty());
 
@@ -109,32 +114,58 @@ void GlobalResources::init(const Zstring& filepath)
 }
 
 
-const wxBitmap& GlobalResources::getImage(const wxString& name) const
+const wxBitmap& GlobalBitmaps::getImage(const wxString& name) const
 {
     auto it = bitmaps.find(contains(name, L'.') ? name : name + L".png"); //assume .png ending if nothing else specified
     if (it != bitmaps.end())
         return it->second;
-
     assert(false);
     return wxNullBitmap;
 }
 
 
-const wxAnimation& GlobalResources::getAnimation(const wxString& name) const
+const wxAnimation& GlobalBitmaps::getAnimation(const wxString& name) const
 {
     auto it = anims.find(contains(name, L'.') ? name : name + L".gif");
     if (it != anims.end())
         return it->second;
-
     assert(false);
     return wxNullAnimation;
 }
 }
 
 
-void zen::initResourceImages(const Zstring& filepath) { GlobalResources::instance().init(filepath); }
-void zen::cleanupResourceImages() { GlobalResources::instance().cleanup(); }
+void zen::initResourceImages(const Zstring& filepath)
+{
+	if (std::shared_ptr<GlobalBitmaps> inst = GlobalBitmaps::instance())
+		inst->init(filepath); 
+	else
+		assert(false);
+}
 
-const wxBitmap& zen::getResourceImage(const wxString& name) { return GlobalResources::instance().getImage(name); }
 
-const wxAnimation& zen::getResourceAnimation(const wxString& name) { return GlobalResources::instance().getAnimation(name); }
+void zen::cleanupResourceImages() 
+{
+		if (std::shared_ptr<GlobalBitmaps> inst = GlobalBitmaps::instance())
+			inst->cleanup(); 
+	else
+		assert(false);
+}
+
+
+const wxBitmap& zen::getResourceImage(const wxString& name) 
+{
+	if (std::shared_ptr<GlobalBitmaps> inst = GlobalBitmaps::instance())
+		return inst->getImage(name); 
+    assert(false);
+    return wxNullBitmap;
+}
+
+
+const wxAnimation& zen::getResourceAnimation(const wxString& name) 
+{
+	if (std::shared_ptr<GlobalBitmaps> inst = GlobalBitmaps::instance())
+		return inst->getAnimation(name); 
+    assert(false);
+    return wxNullAnimation;
+}

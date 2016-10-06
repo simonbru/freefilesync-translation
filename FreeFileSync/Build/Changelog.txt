@@ -1,5 +1,21 @@
-FreeFileSync 8.4
+FreeFileSync 8.5
 ----------------
+Support multiple SSH connections per SFTP folder traversal: N times speed up
+Support multiple SFTP channels per SSH connection: additional N times speed up
+Fixed installer crashes by using correct DEP-compatibility
+Fixed notification area icon being generated too often
+Thread-safe SFTP deinitialization on shutdown
+Thread-safe mini-dump creation during shutdown
+Fixed case-insensitive migration of new csidl macro names
+Reduced SFTP access serialization overhead
+Buffer SFTP sessions independently from usage context
+Detect and discard timed-out SSH sessions
+Pre-empt SFTP session disconnect via dedicated SFTP cleanup thread
+Run SFTP tasks directly on worker threads without helper thread overhead
+
+
+FreeFileSync 8.4 [2016-08-12]
+-----------------------------
 Mark temporary copies created by %local_path% read-only
 Fixed crash when accessing Bitvise SFTP Servers
 Support nanosecond-precision file time copying (Linux)
@@ -8,7 +24,7 @@ Fixed crash while setting privileges during shutdown
 Fixed crash when failing to clean up log files
 Fixed EOPNOTSUPP error when copying file to gvfs Samba share (Linux)
 Fixed default external applications command line (Linux)
-Thread-safe translation change even during app shutdown
+Thread-safe translation access and change during app shutdown
 Don't consider port and password when comparing SFTP paths
 Updated translation files
 
